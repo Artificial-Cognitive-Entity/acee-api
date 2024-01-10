@@ -1,0 +1,14 @@
+everything in the app folder is a server-side component
+
+folders will not be publicly accessible unless a page.tsx file is added inside of it
+
+server components can't handle browser events (click, mouseover, etc.)
+    can use 'use client' to by pass this
+    better to extract the interactive part and to put it in a separate component
+
+
+
+
+
+*** notes for me ***
+collapsible dashboard - accordion component (daisyui)
