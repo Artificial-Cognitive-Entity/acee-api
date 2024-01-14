@@ -1,5 +1,3 @@
-import Image from 'next/image'
-import Link from 'next/link'
 import Greeting from './components/Greeting'
 
 export default function Home() {

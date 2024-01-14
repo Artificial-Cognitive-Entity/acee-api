@@ -1,0 +1,15 @@
+{
+    "sqltools.connections": [
+        {
+            "server": "svc-012df3dd-534d-430a-a419-76bdec008e59-dml.gcp-scarolina-1.svc.singlestore.com",
+            "port": 3306,
+            "database": "vector_db",
+            "username": "admin",
+            "password": "YVw1pv1FRmjYrmN9OBPswh7cvMvGw0oo",
+            "useSsl": false,
+            "previewLimit": 50,
+            "driver": "SingleStoreDB",
+            "name": "acee-proto"
+        }
+    ]
+}

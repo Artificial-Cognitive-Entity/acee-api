@@ -1,10 +1,12 @@
 import React from 'react'
+
 import Dash from '../components/dashboard/dash'
 
-const Dashboard = () => {
+
+const ChatPage = () => {
   return (
-    <Dash/>
+      <Dash></Dash>
   )
 }
 
-export default Dashboard
+export default ChatPage

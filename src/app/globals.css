@@ -2,13 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* :root {
-  --foreground-rgb: 0, 0, 0;
-} */
+:root {
+  --foreground-rgb: red;
+  --background-rgb: red;
+}
 
-/* n */
-
-/* body {
+body {
   color: rgb(var(--foreground-rgb));
-  padding: 1rem;
-} */
+
+}
