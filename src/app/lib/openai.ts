@@ -1,4 +1,4 @@
-import OpenAI from "openAI";
+import OpenAI from "openai";
 const apiKey = process.env.OPENAI_API_KEY;
 
 if (!apiKey) {
