@@ -18,19 +18,34 @@ export async function POST(req: Request) {
 
     // NEED TO GET USER'S ID FOR SPECIFIC CONVO HISTORY
     const relevantDocs: any = await findRelevantDocs({ embedding });
+    let systemMessage: ChatCompletionMessage;
 
-    const systemMessage: ChatCompletionMessage = {
-      role: "assistant",
-      content:
-        "You are an AI assisant built to aid employees in finding relevant documentation pertaining to the company. You are able to answer the user's questions based on documents in the database. Do not use any sources other than the relevant documents provided." +
-        "The relevant documents found in the database for this query are:\n" +
-        relevantDocs
-          .map(
-            (doc: { text: string; title: string }) =>
-              `Title: ${doc.title}\n\nContent:\n${doc.text}`
-          )
-          .join(),
-    };
+    if(relevantDocs)
+    {
+      systemMessage = {
+        role: "assistant",
+        content:
+          "You are an AI assisant built to aid employees in finding relevant documentation pertaining to the company. You are able to answer the user's questions based on documents in the database. Do not use any sources other than the relevant documents provided." +
+          "The relevant documents found in the database for this query are:\n" +
+          relevantDocs
+            .map(
+              (doc: { text: string; title: string }) =>
+                `Title: ${doc.title}\n\nContent:\n${doc.text}`
+            )
+            .join(),
+      };
+    }
+
+    else{
+      systemMessage = {
+        role: "assistant",
+        content:
+          "You are an AI assisant built to aid employees in finding relevant documentation pertaining to the company. You are able to answer the user's questions based on documents in the database. Do not use any sources other than the relevant documents provided." +
+          "Unfortunately, there are no relevant documents available, so let the user know that you are unable to help them at this moment " 
+      };
+
+    }
+   
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",

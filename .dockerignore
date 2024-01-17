@@ -3,5 +3,3 @@ node_modules/
 .gitignore
 .env
 .vscode/
-*.config.js
-*.config.ts

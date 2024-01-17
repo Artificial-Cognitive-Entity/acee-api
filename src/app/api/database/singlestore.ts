@@ -14,6 +14,8 @@ if (!HOST || !PASSWORD || !USER) {
 //this function connects to singlestoredb
 export async function connectSingleStore() {
   let singleStoreConnection;
+
+  //pass creds to mysql
   try {
     singleStoreConnection = mysql.createConnection({
       host: HOST,
@@ -29,10 +31,12 @@ export async function connectSingleStore() {
   }
 }
 
+//ends singlestore connection
 export async function stopSingleStore(conn: mysql.Connection) {
   await conn.end();
 }
 
+//finds relevant documents to the user query in the database
 export async function findRelevantDocs({
   conn,
   embedding,
@@ -45,6 +49,8 @@ export async function findRelevantDocs({
       conn = await connectSingleStore();
     }
 
+    //SQL QUERY - takes the embedding, converts it to a vector singlestore recognizes,
+    //  does the dot product between that vector and all the vectors in the table
     const query =
       "SELECT title, text, DOT_PRODUCT_F64(JSON_ARRAY_PACK_F64('[" +
       embedding +
@@ -52,9 +58,11 @@ export async function findRelevantDocs({
 
     const result = await conn.query(query);
     return result[0];
+
   } catch (error) {
     console.log(error);
     return error;
+    //!IMPORTANT! end connection after each query
   } finally {
     if (conn) {
       await stopSingleStore(conn);
@@ -74,7 +82,6 @@ export async function searchDatabase({
       conn = await connectSingleStore();
     }
 
-    //have to use escape quotes, dot_product and json_array_pack suffic (F_64) is dependent on what was used in the insert statement
     let query =
       "SELECT title, text, DOT_PRODUCT_F64(JSON_ARRAY_PACK_F64('[" +
       embedding +
