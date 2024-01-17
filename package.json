@@ -22,7 +22,8 @@
     "react-auto-growing-input": "^0.0.3",
     "react-dom": "^18.2.0",
     "react-textarea-autosize": "^8.5.3",
-    "tailwind-merge": "^2.2.0"
+    "tailwind-merge": "^2.2.0",
+    "typechat": "^0.0.10"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -1,0 +1,7 @@
+node_modules/
+.next/
+.gitignore
+.env
+.vscode/
+*.config.js
+*.config.ts
