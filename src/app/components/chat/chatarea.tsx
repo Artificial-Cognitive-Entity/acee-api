@@ -7,6 +7,7 @@ import { Message } from "ai";
 import { Robot, PersonCircle } from "@styled-icons/bootstrap";
 import { useEffect, useRef } from "react";
 import TrashIcon from "@/app/components/chat/trash";
+import { RobotImage } from "./RobotIcon";
 
 export default function ChatArea() {
   const {
@@ -68,16 +69,15 @@ export default function ChatArea() {
           >
             <TrashIcon></TrashIcon>
           </Button>
-            <TextareaAutosize
-              className="w-9/12 resize-none rounded-lg"
-              maxRows={4}
-              value={input}
-              onChange={handleInputChange}
-              placeholder="enter anything"
-              autoFocus
-              
-              id="usermsg"
-            ></TextareaAutosize>
+          <TextareaAutosize
+            className="w-9/12 resize-none rounded-lg text-black"
+            maxRows={4}
+            value={input}
+            onChange={handleInputChange}
+            placeholder="enter anything"
+            autoFocus
+            id="usermsg"
+          ></TextareaAutosize>
           <Button type="submit" className="w-1/12">
             enter
           </Button>
@@ -100,7 +100,7 @@ function ChatMessage({
         isAiMessage ? "m-5 justify-start" : "justify-end ms-5"
       )}
     >
-      {isAiMessage && <Robot className="mr-2  w-10 h-10"></Robot>}
+      {isAiMessage && <RobotImage className="mr-2"></RobotImage>}
       <p
         className={cn(
           "whitespace-pre-line rounded-xl border-2 px-3 py-2",
@@ -110,7 +110,7 @@ function ChatMessage({
         {content}
       </p>
       {!isAiMessage && (
-        <PersonCircle className="ml-2 w-10 h-10 "></PersonCircle>
+        <PersonCircle className="ml-2 w-12 h-12 grow-0 shrink-0 basis-auto "></PersonCircle>
       )}
     </div>
   );
