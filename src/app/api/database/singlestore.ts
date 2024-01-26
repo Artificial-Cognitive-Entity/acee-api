@@ -2,7 +2,7 @@ import mysql from "mysql2/promise";
 
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
-const USER = process.env.SINGLESTORE_USER;
+const USER = process.env.USER;
 const DATABASE = process.env.DATABASE;
 
 if (!HOST || !PASSWORD || !USER) {
@@ -62,15 +62,15 @@ export async function findRelevantDocs({
     const doc_id = cont_result[0][0].doc_id;
     const doc_result: any = await getProject(conn, doc_id);
     const source_id = doc_result[0].source_id;
-    const source_result: any = await getSource(conn, source_id);
+    const source_result: any = await getSource(conn, source_id )
 
     const relevantDoc = {
       project_title: doc_result[0].title,
       content: cont_result[0][0].content,
       total_issues: doc_result[0].num_segments,
       project_status: doc_result[0].status,
-      source: source_result[0].source_type,
-    };
+      source: source_result[0].source_type
+    }
     return relevantDoc;
   } catch (error) {
     console.log(error);
@@ -96,17 +96,13 @@ async function getContentID(conn: mysql.Connection, embedding: any) {
 }
 
 async function getProject(conn: mysql.Connection, doc_id: string) {
-  const query =
-    "SELECT title, num_segments, status, source_id FROM documents WHERE doc_id = '" +
-    doc_id +
-    "'";
+  const query = "SELECT title, num_segments, status, source_id FROM documents WHERE doc_id = '" + doc_id + "'";
   const result = await conn.query(query);
   return result[0];
 }
 
 async function getSource(conn: mysql.Connection, source_id: string) {
-  const query =
-    "SELECT source_type FROM data_source WHERE source_id = '" + source_id + "'";
+  const query = "SELECT source_type FROM data_source WHERE source_id = '" + source_id + "'";
   const result = await conn.query(query);
   return result[0];
 }

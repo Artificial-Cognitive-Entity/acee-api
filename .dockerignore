@@ -3,4 +3,3 @@ node_modules/
 .gitignore
 .env
 .vscode/
-docker-compose.yml
