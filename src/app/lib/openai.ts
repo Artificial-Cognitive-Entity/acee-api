@@ -7,4 +7,3 @@ if (!apiKey) {
 
 const openai = new OpenAI({ apiKey });
 export default openai;
-

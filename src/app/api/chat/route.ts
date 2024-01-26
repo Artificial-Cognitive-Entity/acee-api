@@ -4,6 +4,8 @@ import { findRelevantDocs } from "@/app/api/database/singlestore";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import { geckoEmbedding } from "@/app/lib/vertexai";
 
+const OPENAI_MODEL = process.env.OPENAI_MODEL!;
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -44,7 +46,7 @@ export async function POST(req: Request) {
     }
 
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: OPENAI_MODEL,
       stream: true,
       messages: [systemMessage, ...messagesTruncated],
     });

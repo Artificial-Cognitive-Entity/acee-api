@@ -1,4 +1,4 @@
-import { PredictionServiceClient, helpers} from "@google-cloud/aiplatform";
+import { PredictionServiceClient, helpers } from "@google-cloud/aiplatform";
 
 const PROJECT = process.env.PROJECT;
 const LOCATION = process.env.LOCATION;
@@ -11,7 +11,6 @@ const clientOptions = {
   apiEndpoint: ENDPOINT,
 };
 
-
 // Instantiates a client
 const predictionServiceClient = new PredictionServiceClient(clientOptions);
 
@@ -20,7 +19,7 @@ export async function geckoEmbedding(userInput) {
   const endpoint = `projects/${PROJECT}/locations/${LOCATION}/publishers/${PUBLISHER}/models/${MODEL}`;
   const instance = {
     content: userInput,
-    task_type: "RETRIEVAL_QUERY"
+    task_type: "RETRIEVAL_QUERY",
   };
   const instanceValue = helpers.toValue(instance);
   const instances = [instanceValue];
@@ -33,7 +32,7 @@ export async function geckoEmbedding(userInput) {
   };
   const parameters = helpers.toValue(parameter);
 
-  const req  = {
+  const req = {
     endpoint,
     instances,
     parameters,
@@ -43,6 +42,6 @@ export async function geckoEmbedding(userInput) {
   const [response] = await predictionServiceClient.predict(req);
   const predictions = response.predictions;
   for (const prediction of predictions) {
-   return helpers.fromValue(prediction).embeddings.values
+    return helpers.fromValue(prediction).embeddings.values;
   }
 }
