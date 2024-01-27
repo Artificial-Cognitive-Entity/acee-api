@@ -29,7 +29,7 @@ yarn-error.log*
 .env
 key.json
 docker-compose.yml
-cloudbuild.yaml
+
 
 # vercel
 .vercel
