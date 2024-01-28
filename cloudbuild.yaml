@@ -1,0 +1,35 @@
+steps:
+  # Step 1: Build the Docker image from the Dockerfile in the source repository.
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/cloud-run-source-deploy/acee-api/acee-api:$SHORT_SHA', '.']
+
+  # Step 2: Push the image to Google Artifact Registry.
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/cloud-run-source-deploy/acee-api/acee-api:$SHORT_SHA']
+
+  # Step 3: Deploy the image to Cloud Run.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+    - 'run'
+    - 'deploy'
+    - 'acee-api' # The name of the Cloud Run service
+    - '--image'
+    - 'gcr.io/$PROJECT_ID/cloud-run-source-deploy/acee-api/acee-api:$SHORT_SHA'
+    - '--region'
+    - 'us-central1'
+    - '--platform'
+    - 'managed'
+    - '--allow-unauthenticated' # Consider removing if authentication is required
+
+images:
+  - 'gcr.io/$PROJECT_ID/cloud-run-source-deploy/acee-api/acee-api:$SHORT_SHA'
+
+timeout: '3600s' # 1 hour timeout, match this to your build's requirements
+
+substitutions:
+  _AR_HOSTNAME: 'us-central1-docker.pkg.dev'
+  _PLATFORM: 'managed'
+  _DEPLOY_REGION: 'us-central1'
+  _TRIGGER_ID: '0a28f2ea-6f92-4e31-a742-14f7793989b8'
+  _SERVICE_NAME: 'acee-api'
