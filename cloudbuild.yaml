@@ -17,7 +17,7 @@ steps:
     - '--image'
     - 'gcr.io/$PROJECT_ID/cloud-run-source-deploy/acee-api/acee-api:$SHORT_SHA'
     - '--region'
-    - 'us-central1'
+    - 'us-east1'
     - '--platform'
     - 'managed'
     - '--allow-unauthenticated'
