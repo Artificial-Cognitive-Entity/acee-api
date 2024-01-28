@@ -20,7 +20,7 @@ steps:
     - 'us-central1'
     - '--platform'
     - 'managed'
-    - '--allow-unauthenticated' # Consider removing if authentication is required
+    - '--allow-unauthenticated'
 
 images:
   - 'gcr.io/$PROJECT_ID/cloud-run-source-deploy/acee-api/acee-api:$SHORT_SHA'
@@ -28,8 +28,8 @@ images:
 timeout: '3600s' # 1 hour timeout, match this to your build's requirements
 
 substitutions:
-  _AR_HOSTNAME: 'us-central1-docker.pkg.dev'
+  _AR_HOSTNAME: 'us-east1-docker.pkg.dev'
   _PLATFORM: 'managed'
-  _DEPLOY_REGION: 'us-central1'
+  _DEPLOY_REGION: 'us-east1'
   _TRIGGER_ID: '0a28f2ea-6f92-4e31-a742-14f7793989b8'
   _SERVICE_NAME: 'acee-api'
