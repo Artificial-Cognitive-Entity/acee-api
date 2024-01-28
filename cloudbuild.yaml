@@ -1,11 +1,11 @@
 steps:
   # Step 1: Build the Docker image from the Dockerfile in the source repository.
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-east1-docker.pkg.dev/${PROJECT_ID}/acee-api/acee-api', '.']
+    args: ['build', '-t', 'us-east1-docker.pkg.dev/${PROJECT_ID}/Artificial-Cognitive-Entity/acee-api/acee-api', '.']
 
   # Step 2: Push the image to Google Artifact Registry.
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-east1-docker.pkg.dev/${PROJECT_ID}/acee-api/acee-api']
+    args: ['push', 'us-east1-docker.pkg.dev/${PROJECT_ID}/Artificial-Cognitive-Entity/acee-api/acee-api']
 
   # Step 3: Deploy the image to Cloud Run.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -15,7 +15,7 @@ steps:
     - 'deploy'
     - 'acee-api' # The name of the Cloud Run service
     - '--image'
-    - 'us-east1-docker.pkg.dev/${PROJECT_ID}/acee-api/acee-api'
+    - 'us-east1-docker.pkg.dev/${PROJECT_ID}/Artificial-Cognitive-Entity/acee-api/acee-api'
     - '--region'
     - 'us-east1'
     - '--platform'
