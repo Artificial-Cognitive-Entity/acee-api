@@ -5,7 +5,7 @@ import React from 'react'
 
 const TrashIcon = () => {
   return (
-    <Trash title="clear" className="w-1/3"></Trash>
+    <Trash title="clear" className="w-8 grow-0 shrink-0 basis-auto"></Trash>
   )
 }
 
