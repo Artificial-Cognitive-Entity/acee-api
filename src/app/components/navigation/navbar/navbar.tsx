@@ -25,11 +25,11 @@ const Navbar = () => {
                             <li>
                                 <a>Team</a>
                                 <ul className="p-2">
-                                    <li><a>1</a></li>
-                                    <li><a>2</a></li>
-                                    <li><a>3</a></li>
-                                    <li><a>4</a></li>
-                                    <li><a>5</a></li>
+                                    <li><a>Nick Procaccio</a></li>
+                                    <li><a>Joshua Abrams</a></li>
+                                    <li><a>Kayla Douglas</a></li>
+                                    <li><a>Mihir Araveeti</a></li>
+                                    <li><a>Celina Alzenor</a></li>
                                 </ul>
                             </li>
                         </ul>

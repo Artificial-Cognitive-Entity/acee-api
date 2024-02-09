@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { usePathname } from "next/navigation";
-import ChatArea from "../chat/chatarea";
+import ChatArea from "../chat/ChatArea";
 import SearchArea from "../search/SearchArea";
 import DashArea from "./DashArea";
 

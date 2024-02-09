@@ -10,9 +10,9 @@ const Sidebar = () => {
       <label
         htmlFor="my-drawer-2"
         aria-label="close sidebar"
-        className="drawer-overlay"
+        className="drawer-overlay bg-base-300"
       ></label>
-      <ul className="menu p-4 w-45 h-full text-base-content justify-around ">
+      <ul className="menu p-4 w-45 h-full bg-base-300 text-base-content justify-around ">
         {/* Sidebar content here */}
         <li>
           <Link href="/dashboard" className="justify-center flex">
