@@ -4,10 +4,12 @@ import { useChat } from "ai/react";
 import TextareaAutosize from "react-textarea-autosize";
 import Button from "../button";
 import { Message } from "ai";
-import { Robot, PersonCircle } from "@styled-icons/bootstrap";
+import { PersonCircle } from "@styled-icons/bootstrap";
 import { useEffect, useRef } from "react";
 import TrashIcon from "@/app/components/chat/trash";
 import { RobotImage } from "./RobotIcon";
+import { ChatLoader } from "@/app/lib/loader";
+import { Transition } from "@headlessui/react";
 
 export default function ChatArea() {
   const {
@@ -42,7 +44,7 @@ export default function ChatArea() {
             <ChatMessage
               message={{
                 role: "assistant",
-                content: "Thinking..",
+                content: "COMING UP WITH A RESPONSE FOR THE USER",
               }}
             ></ChatMessage>
           )}
@@ -94,24 +96,70 @@ function ChatMessage({
 }) {
   const isAiMessage = role === "assistant";
   return (
-    <div
-      className={cn(
-        "mb-3 flex items-center",
-        isAiMessage ? "m-5 justify-start" : "justify-end ms-5"
-      )}
-    >
-      {isAiMessage && <RobotImage className="mr-2"></RobotImage>}
-      <p
+    <>
+      <div
         className={cn(
-          "whitespace-pre-line rounded-xl border-2 px-3 py-2",
-          isAiMessage ? "bg-gray-600 text-white " : "bg-blue-800 text-white"
+          "mb-3 flex items-center",
+          isAiMessage
+            ? "chat chat-start m-5 justify-start"
+            : "chat chat-end justify-end ms-5"
         )}
       >
-        {content}
-      </p>
-      {!isAiMessage && (
-        <PersonCircle className="ml-2 w-12 h-12 grow-0 shrink-0 basis-auto "></PersonCircle>
-      )}
-    </div>
+        {isAiMessage && <RobotImage className="mr-2"></RobotImage>}
+
+        <div className="chat-header">
+          {isAiMessage && (
+            <>
+              <div className="">
+                <div>ACEE</div>{" "}
+                <time className="text-xs opacity-50">12:45</time>
+              </div>
+            </>
+          )}
+        </div>
+        {isAiMessage && content == "COMING UP WITH A RESPONSE FOR THE USER" ? (
+          <Transition
+            appear={true}
+            show={true}
+            enter="transition-all ease-in-out duration-500 delay-[200ms]"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="transition-all ease-in-out duration-500"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="chat-bubble chat-bubble-primary text-lg flex justify-center items-center">
+              <ChatLoader></ChatLoader>
+            </div>
+          </Transition>
+        ) : (
+          <Transition
+            appear={true}
+            show={true}
+            enter="transition-all ease-in-out duration-500 delay-[200ms]"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="transition-all ease-in-out duration-500"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="chat-bubble chat-bubble-primary text-primary-content text-lg">
+              {content}
+            </div>
+          </Transition>
+        )}
+
+        <div className="chat-header">
+          {!isAiMessage && (
+            <>
+              <div>User</div> <time className="text-xs opacity-50">12:45</time>
+            </>
+          )}
+        </div>
+        {!isAiMessage && (
+          <PersonCircle className="ml-2 w-12 h-12 grow-0 shrink-0 basis-auto "></PersonCircle>
+        )}
+      </div>
+    </>
   );
 }

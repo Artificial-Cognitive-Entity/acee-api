@@ -1,31 +1,30 @@
-'use client'
-import React from 'react'
-import { Input } from '@material-tailwind/react'
+"use client";
+import React from "react";
 
 const InputField = () => {
-    return (
-        <>
-            <div>
-                <Input
-                    crossOrigin
-                    label="Email*"
-                    labelProps={{ className: "mb-2 text-sm text-start text-grey-900" }}
-                    id="email"
-                    type="email"
-                    placeholder="mail@yourorg.com"
-                    className="flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none focus:bg-grey-400 mb-7 placeholder:text-grey-700 bg-grey-200 text-dark-grey-900 rounded-2xl" />
-                <Input
-                    crossOrigin
-                    label="Password*"
-                    labelProps={{ className: "m-auto text-sm text-start text-grey-900" }}
-                    id="password"
-                    type="password"
-                    placeholder="Enter a password"
-                    className="flex items-center w-full px-5 py-4 mt-7 mr-2 text-sm font-medium outline-none focus:bg-grey-400 placeholder:text-grey-700 bg-grey-200 text-dark-grey-900 rounded-2xl"
-                />
-            </div>
-        </>
-    )
-}
+  return (
+    <>
+      <div>
+        <label className="flex" htmlFor="email">Email*</label>
+        <input
+          autoFocus
+          id="email"
+          type="email"
+          placeholder="mail@yourorg.com"
+          className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none mb-7 placeholder:text-grey-700 bg-grey-200 rounded-2xl"
+        />
 
-export default InputField
+        <label className="flex" htmlFor="password">Password*</label>
+        <input
+          autoFocus
+          id="password"
+          type="password"
+          placeholder="Enter your password"
+          className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none mb-7 placeholder:text-grey-700 bg-grey-200 rounded-2xl"
+        />
+      </div>
+    </>
+  );
+};
+
+export default InputField;
