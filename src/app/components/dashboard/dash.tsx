@@ -1,6 +1,6 @@
 import React from "react";
 import Sidebar from "../navigation/sidebar/sidebar";
-import RightSide from "./right_side";
+import RightSide from "./RightSide";
 import MenuIcon from "../navigation/sidebar/menu";
 
 const Dash = () => {
@@ -12,7 +12,7 @@ const Dash = () => {
           htmlFor="my-drawer-2"
           className="btn btn-red drawer-button lg:hidden self-start"
         >
-         <MenuIcon/>
+          <MenuIcon />
         </label>
         <RightSide />
       </div>
