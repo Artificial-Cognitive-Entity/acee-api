@@ -1,3 +1,4 @@
+import { generatePassword } from "@/app/lib/generatePassword";
 import Translator, { ContentTranslator } from "../../lib/typechat/translator";
 import { geckoEmbedding } from "@/app/lib/models/vertexai";
 import { Question } from "@/app/lib/typechat/searchSchema";
@@ -35,6 +36,93 @@ export async function connectSingleStore() {
 export async function stopSingleStore(conn: mysql.Connection) {
   await conn.end();
 }
+
+//search for duplicate email address in users table
+export async function findEmail({
+  conn,
+  email,
+}: {
+  conn?: mysql.Connection;
+  email: string;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query: any = `SELECT * FROM users WHERE email = "${email.toLowerCase()}"`;
+    const result: any = await conn.query(query);
+
+    console.log(result[0]);
+    if (result) {
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
+//insert new user
+export async function addUser({
+  conn,
+  fName,
+  lName,
+  email,
+  role,
+}: {
+  conn?: mysql.Connection;
+  fName: string;
+  lName: string;
+  email: string;
+  role: string;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+    const insertRoles = {
+      roles: [role],
+    };
+
+    
+
+    // get date created in EST
+    const offset = -300;
+    const date: string = new Date(new Date().getTime() + offset * 60 * 1000)
+      .toISOString()
+      .substring(0, 19)
+      .replace("T", " ");
+
+    //TODO: need to get groups from the user that is logged in
+
+    const password = await generatePassword();
+    const query = `INSERT INTO users (user_id, groups, first_name, last_name, email, password, status, session_id, created_at, roles, conversations) 
+    VALUES(UUID(),${null},"${fName}","${lName}","${email}","${password}","unverified",${null},"${date}",'${JSON.stringify(
+      insertRoles
+    )}',${null})`;
+    const result = await conn.query(query);
+    if (result) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
 //finds the most relevant document to the user's query
 export async function findRelevantDocs({
   conn,
@@ -105,9 +193,7 @@ export async function searchDatabase({
       "]'), embedding) AS score FROM embeddings_table ORDER BY score DESC LIMIT 10 ";
 
     const res: any = await getContentID(conn, embedQuery);
-    // let searchResults: {}[] = [];
 
-    console.log("\n\n\n");
     let projects: any = [];
 
     for (let i = 0; i < 10; i++) {
@@ -225,7 +311,6 @@ function addIssue(
   board_name: string,
   sprint_name: string
 ) {
-
   const issue_info = {
     issue_title: issue_title,
     issue_type: issue_type,
@@ -328,7 +413,6 @@ async function getJiraContent(document: any, projArr: any) {
         issue_description,
         issue_created,
         issue_status
-        
       )
     );
 
@@ -343,7 +427,7 @@ async function getJiraContent(document: any, projArr: any) {
   //check if project already exists, search for the board
   if (containsProject) {
     const projectIndex = projArr.indexOf(containsProject);
-    const containsBoard: any  = searchForBoard(
+    const containsBoard: any = searchForBoard(
       projArr[projectIndex].project_info.boards,
       board_name
     );
@@ -442,8 +526,7 @@ function makeProject(
   issue_type: string,
   issue_description: string,
   issue_created: string,
-  issue_status: string,
-
+  issue_status: string
 ) {
   let boards: {}[] = [];
 
