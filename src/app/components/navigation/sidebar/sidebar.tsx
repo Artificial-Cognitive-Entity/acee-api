@@ -3,6 +3,7 @@ import HouseIcon from "./house";
 import SearchIcon from "./search";
 import Link from "next/link";
 import RobotIcon from "../../chat/RobotIcon";
+import ModeSwap from "../../ModeSwap";
 
 const Sidebar = () => {
   return (
@@ -28,6 +29,9 @@ const Sidebar = () => {
           <Link href="/chat" className="justify-center flex">
             <RobotIcon />
           </Link>
+        </li>
+        <li>
+          <ModeSwap></ModeSwap>
         </li>
         <li>
           <Link href="/">Log out</Link>
