@@ -5,13 +5,23 @@ import TextareaAutosize from "react-textarea-autosize";
 import Button from "../button";
 import { Message } from "ai";
 import { PersonCircle } from "@styled-icons/bootstrap";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import TrashIcon from "@/app/components/chat/trash";
 import { RobotImage } from "./RobotIcon";
 import { ChatLoader } from "@/app/lib/loader";
 import { Transition } from "@headlessui/react";
 
 export default function ChatArea() {
+  const [time, setTime] = useState("");
+  const getTimeStamp = () => {
+    const hours_24 = new Date().getHours();
+    const period = hours_24 >= 12 ? "PM" : "AM";
+
+    const hours = hours_24 - 12;
+    const timestamp = `${hours}:${new Date().getMinutes()} ${period}`;
+    setTime(timestamp);
+  };
+
   const {
     messages,
     input,
@@ -21,6 +31,14 @@ export default function ChatArea() {
     isLoading,
     error,
   } = useChat(); // automatically makes a request to /api/chat
+
+  const onEnterPress = (e: any) => {
+    if (e.keyCode == 13 && e.shiftKey == false) {
+      e.preventDefault();
+      handleSubmit(e);
+      getTimeStamp();
+    }
+  };
 
   // scroll while input is generated
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -37,7 +55,7 @@ export default function ChatArea() {
       <div className="flex flex-col rounded shadow-xl h-full">
         <div className="h-full mt-3 mb-3 px-3 overflow-y-auto" ref={scrollRef}>
           {messages.map((message) => (
-            <ChatMessage message={message} key={message.id} />
+            <ChatMessage message={message} key={message.id} time={time} />
           ))}
 
           {isLoading && lastMessageIsUser && (
@@ -46,6 +64,7 @@ export default function ChatArea() {
                 role: "assistant",
                 content: "COMING UP WITH A RESPONSE FOR THE USER",
               }}
+              time={""}
             ></ChatMessage>
           )}
 
@@ -55,12 +74,14 @@ export default function ChatArea() {
                 role: "assistant",
                 content: "Something went wrong! Please try again.",
               }}
+              time={time}
             ></ChatMessage>
           )}
         </div>
 
         <form
           onSubmit={handleSubmit}
+          onKeyDown={onEnterPress}
           className="w-full inline-flex items-center justify-around mb-5"
           id="form"
         >
@@ -73,14 +94,14 @@ export default function ChatArea() {
           </Button>
           <TextareaAutosize
             className="w-9/12 resize-none rounded-lg text-black"
-            maxRows={4}
+            maxRows={1}
             value={input}
             onChange={handleInputChange}
             placeholder="enter anything"
             autoFocus
             id="usermsg"
           ></TextareaAutosize>
-          <Button type="submit" className="w-1/12">
+          <Button type="submit" className="w-1/12" onClick={getTimeStamp}>
             enter
           </Button>
         </form>
@@ -91,18 +112,21 @@ export default function ChatArea() {
 
 function ChatMessage({
   message: { role, content },
+  time,
 }: {
   message: Pick<Message, "role" | "content">;
+  time: string;
 }) {
   const isAiMessage = role === "assistant";
+
   return (
     <>
       <div
         className={cn(
-          "mb-3 flex items-center",
+          "mb-3 flex items-center chat",
           isAiMessage
-            ? "chat chat-start m-5 justify-start"
-            : "chat chat-end justify-end ms-5"
+            ? "chat-start m-5 justify-start"
+            : "chat-end justify-end m-5"
         )}
       >
         {isAiMessage && <RobotImage className="mr-2"></RobotImage>}
@@ -112,7 +136,7 @@ function ChatMessage({
             <>
               <div className="">
                 <div>ACEE</div>{" "}
-                <time className="text-xs opacity-50">12:45</time>
+                <time className="text-xs opacity-50">{time}</time>
               </div>
             </>
           )}
@@ -143,16 +167,23 @@ function ChatMessage({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="chat-bubble chat-bubble-primary text-primary-content text-lg">
-              {content}
-            </div>
+            {isAiMessage &&
+            content == "Something went wrong! Please try again." ? (
+              <div className="chat-bubble chat-bubble-error text-primary-content text-lg text-left">
+                {content}
+              </div>
+            ) : (
+              <div className="chat-bubble chat-bubble-primary text-primary-content text-lg">
+                {content}
+              </div>
+            )}
           </Transition>
         )}
 
         <div className="chat-header">
           {!isAiMessage && (
             <>
-              <div>User</div> <time className="text-xs opacity-50">12:45</time>
+              <div>User</div> <time className="text-xs opacity-50">{time}</time>
             </>
           )}
         </div>

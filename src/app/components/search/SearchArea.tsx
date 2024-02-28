@@ -25,6 +25,13 @@ const SearchArea = () => {
     setSearchTerm(value);
   };
 
+  const onEnterPress = (e: any) => {
+    if(e.keyCode == 13 && e.shiftKey == false) {
+      e.preventDefault();
+      handleSubmit(e)
+    }
+  };
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -57,6 +64,7 @@ const SearchArea = () => {
       <form
         className=" mt-12 w-full flex justify-center items-center gap-1"
         onSubmit={handleSubmit}
+        onKeyDown={onEnterPress}
       >
         <TextareaAutosize
           className="w-9/12 resize-none rounded-lg text-black"
