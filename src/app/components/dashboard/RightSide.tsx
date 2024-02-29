@@ -5,8 +5,6 @@ import SearchArea from "../search/SearchArea";
 import DashArea from "../admin/DashArea";
 import ChatArea from "../chat/ChatArea";
 
-
-
 const RightSide = () => {
   const pathName = usePathname();
   return (
