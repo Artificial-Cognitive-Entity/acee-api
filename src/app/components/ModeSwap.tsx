@@ -2,9 +2,9 @@
 import React from "react";
 
 const ModeSwap = () => {
-  const [theme, setTheme] = React.useState("business");
+  const [theme, setTheme] = React.useState("black");
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme(theme === "black" ? "wireframe" : "black");
   };
   // initially set the theme and "listen" for changes to apply them to the HTML tag
 
