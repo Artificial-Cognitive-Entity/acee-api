@@ -9,6 +9,7 @@ import SearchResult from "./SearchResult";
 import Loader from "@/app/lib/loader";
 import NotFound from "./NotFound";
 import { Transition } from "@headlessui/react";
+import SearchGreeting from "./SearchGreeting";
 
 interface resultObject {
   project_title: string;
@@ -26,12 +27,17 @@ const SearchArea = () => {
   };
 
   const onEnterPress = (e: any) => {
-    if(e.keyCode == 13 && e.shiftKey == false) {
+    if (e.keyCode == 13 && e.shiftKey == false) {
       e.preventDefault();
-      handleSubmit(e)
+      handleAsked()
+      handleSubmit(e);
     }
   };
 
+  const handleAsked = () =>
+  {
+    setAsked(true);
+  }
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -52,17 +58,16 @@ const SearchArea = () => {
       });
 
       const response = await semanticSearch.json();
-      setAsked(true);
       setResult(response.result);
       setLoading(false);
     }
   };
 
-
   return (
     <div className="flex h-screen w-full flex-col overscroll-none">
+  
       <form
-        className=" mt-12 w-full flex justify-center items-center gap-1"
+        className="w-full inline-flex items-center justify-center gap-8 mt-12 mb-5"
         onSubmit={handleSubmit}
         onKeyDown={onEnterPress}
       >
@@ -74,11 +79,11 @@ const SearchArea = () => {
           value={searchTerm}
           onChange={(e) => handleChange(e.target.value)}
         ></TextareaAutosize>
-        <Button type="submit" className="w-1/12 rounded-lg">
+        <Button type="submit" className="w-1/12 rounded-lg" onClick={handleAsked}>
           enter
         </Button>
       </form>
-
+      {!asked && <SearchGreeting></SearchGreeting>}
       {isLoading ? (
         <div className="flex h-full justify-center items-center">
           <Transition
@@ -119,7 +124,7 @@ const SearchArea = () => {
                     className="inline-flex justify-center items-center flex-col"
                   >
                     <NotFound />
-                    <p>Sorry, we could not find anything.</p>
+                    <div className="text-3xl">Sorry, we could not find anything.</div>
                   </Transition>
                 </div>
               ) : (
