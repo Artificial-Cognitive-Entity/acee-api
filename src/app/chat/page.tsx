@@ -1,6 +1,6 @@
 import React from 'react'
 
-import Dash from '../components/dashboard/dash'
+import Dash from '../components/dashboard/Dash'
 
 
 const ChatPage = () => {
