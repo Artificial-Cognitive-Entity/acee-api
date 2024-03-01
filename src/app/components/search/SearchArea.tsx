@@ -1,7 +1,6 @@
 "use client";
 // TODO: FORMAT SEARCH RESULTS SO IT LOOKS PRETTY
 //       RIGHT CLICK SEARCH RESULT -> CHATBOT QUERY
-//       SUBMIT FORM ON ENTER
 import React, { useEffect, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import Button from "../button";
@@ -9,11 +8,7 @@ import SearchResult from "./SearchResult";
 import Loader from "@/app/lib/loader";
 import NotFound from "./NotFound";
 import { Transition } from "@headlessui/react";
-
-interface resultObject {
-  project_title: string;
-  project_info: any;
-}
+import SearchGreeting from "./SearchGreeting";
 
 const SearchArea = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,10 +23,14 @@ const SearchArea = () => {
   const onEnterPress = (e: any) => {
     if(e.keyCode == 13 && e.shiftKey == false) {
       e.preventDefault();
-      handleSubmit(e)
+      handleAsked();
+      handleSubmit(e);
     }
   };
 
+  const handleAsked = () => {
+    setAsked(true);
+  };
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -74,7 +73,11 @@ const SearchArea = () => {
           value={searchTerm}
           onChange={(e) => handleChange(e.target.value)}
         ></TextareaAutosize>
-        <Button type="submit" className="w-1/12 rounded-lg">
+        <Button
+          type="submit"
+          className="w-1/12 rounded-lg"
+          onClick={handleAsked}
+        >
           enter
         </Button>
       </form>
@@ -119,7 +122,9 @@ const SearchArea = () => {
                     className="inline-flex justify-center items-center flex-col"
                   >
                     <NotFound />
-                    <p>Sorry, we could not find anything.</p>
+                    <div className="text-3xl">
+                      Sorry, we could not find anything.
+                    </div>
                   </Transition>
                 </div>
               ) : (
