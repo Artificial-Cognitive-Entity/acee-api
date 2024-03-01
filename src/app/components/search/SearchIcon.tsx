@@ -2,6 +2,7 @@
 import React from 'react'
 import { Search } from '@styled-icons/bootstrap' 
 
+// search icon
 const SearchIcon = () => {
   return (
     <Search className="w-36 h-36"></Search>

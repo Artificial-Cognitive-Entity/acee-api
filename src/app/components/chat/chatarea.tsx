@@ -14,7 +14,6 @@ import ChatGreeting from "./ChatGreeting";
 
 export default function ChatArea() {
   const [time, setTime] = useState("");
-  const [show, setShow] = useState(true);
   const getTimeStamp = () => {
     const hours_24 = new Date().getHours();
     const period = hours_24 >= 12 ? "PM" : "AM";

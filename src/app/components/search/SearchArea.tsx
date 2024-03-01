@@ -1,7 +1,6 @@
 "use client";
 // TODO: FORMAT SEARCH RESULTS SO IT LOOKS PRETTY
 //       RIGHT CLICK SEARCH RESULT -> CHATBOT QUERY
-//       SUBMIT FORM ON ENTER
 import React, { useEffect, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import Button from "../button";
@@ -10,11 +9,6 @@ import Loader from "@/app/lib/loader";
 import NotFound from "./NotFound";
 import { Transition } from "@headlessui/react";
 import SearchGreeting from "./SearchGreeting";
-
-interface resultObject {
-  project_title: string;
-  project_info: any;
-}
 
 const SearchArea = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,15 +23,14 @@ const SearchArea = () => {
   const onEnterPress = (e: any) => {
     if (e.keyCode == 13 && e.shiftKey == false) {
       e.preventDefault();
-      handleAsked()
+      handleAsked();
       handleSubmit(e);
     }
   };
 
-  const handleAsked = () =>
-  {
+  const handleAsked = () => {
     setAsked(true);
-  }
+  };
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -65,7 +58,6 @@ const SearchArea = () => {
 
   return (
     <div className="flex h-screen w-full flex-col overscroll-none">
-  
       <form
         className="w-full inline-flex items-center justify-center gap-8 mt-12 mb-5"
         onSubmit={handleSubmit}
@@ -79,7 +71,11 @@ const SearchArea = () => {
           value={searchTerm}
           onChange={(e) => handleChange(e.target.value)}
         ></TextareaAutosize>
-        <Button type="submit" className="w-1/12 rounded-lg" onClick={handleAsked}>
+        <Button
+          type="submit"
+          className="w-1/12 rounded-lg"
+          onClick={handleAsked}
+        >
           enter
         </Button>
       </form>
@@ -124,7 +120,9 @@ const SearchArea = () => {
                     className="inline-flex justify-center items-center flex-col"
                   >
                     <NotFound />
-                    <div className="text-3xl">Sorry, we could not find anything.</div>
+                    <div className="text-3xl">
+                      Sorry, we could not find anything.
+                    </div>
                   </Transition>
                 </div>
               ) : (
