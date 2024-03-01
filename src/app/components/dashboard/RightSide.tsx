@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
 import { usePathname } from "next/navigation";
+import ChatArea from "../chat/ChatArea";
 import SearchArea from "../search/SearchArea";
 import DashArea from "../admin/DashArea";
-import ChatArea from "../chat/ChatArea";
 
 const RightSide = () => {
   const pathName = usePathname();
