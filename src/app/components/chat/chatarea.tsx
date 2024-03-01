@@ -10,17 +10,15 @@ import TrashIcon from "@/app/components/chat/trash";
 import { RobotImage } from "./RobotIcon";
 import { ChatLoader } from "@/app/lib/loader";
 import { Transition } from "@headlessui/react";
-import ChatGreeting from "./ChatGreeting";
 
 export default function ChatArea() {
   const [time, setTime] = useState("");
-  const [show, setShow] = useState(true);
   const getTimeStamp = () => {
     const hours_24 = new Date().getHours();
     const period = hours_24 >= 12 ? "PM" : "AM";
 
-    const hours = Math.abs(hours_24 - 12);
-    const timestamp = `${hours}:${new Date().getMinutes().toString().padStart(2, '0')} ${period}`;
+    const hours = hours_24 - 12;
+    const timestamp = `${hours}:${new Date().getMinutes()} ${period}`;
     setTime(timestamp);
   };
 
@@ -53,11 +51,10 @@ export default function ChatArea() {
   const lastMessageIsUser = messages[messages.length - 1]?.role === "user";
 
   return (
-
     <div className={cn("h-screen w-full overscroll-none")}>
       <div className="flex flex-col rounded shadow-xl h-full">
         <div className="h-full mt-3 mb-3 px-3 overflow-y-auto" ref={scrollRef}>
-        {messages.length > 0 ? <>{messages.map((message) => (
+          {messages.map((message) => (
             <ChatMessage message={message} key={message.id} time={time} />
           ))}
 
@@ -79,22 +76,18 @@ export default function ChatArea() {
               }}
               time={time}
             ></ChatMessage>
-          )}</> :
-       
-           <ChatGreeting></ChatGreeting>
-           }
-          
-
+          )}
         </div>
+
         <form
           onSubmit={handleSubmit}
           onKeyDown={onEnterPress}
-          className="w-full inline-flex items-center justify-center gap-7 mb-5"
+          className="w-full inline-flex items-center justify-around mb-5"
           id="form"
         >
           <Button
             type="button"
-            className="w-1/12 rounded-lg"
+            className="w-1/12"
             onClick={() => setMessages([])}
           >
             <TrashIcon></TrashIcon>
@@ -108,7 +101,7 @@ export default function ChatArea() {
             autoFocus
             id="usermsg"
           ></TextareaAutosize>
-          <Button type="submit" className="w-1/12 rounded-lg" onClick={getTimeStamp}>
+          <Button type="submit" className="w-1/12" onClick={getTimeStamp}>
             enter
           </Button>
         </form>
