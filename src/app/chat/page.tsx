@@ -1,5 +1,6 @@
-import React from "react";
-import Dash from "../components/dashboard/Dash";
+import React from 'react'
+
+import Dash from '../components/dashboard/dash'
 
 
 const ChatPage = () => {
