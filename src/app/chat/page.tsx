@@ -1,12 +1,8 @@
-import React from 'react'
-
-import Dash from '../components/dashboard/Dash'
-
+import React from "react";
+import Dash from "../components/dashboard/dash";
 
 const ChatPage = () => {
-  return (
-      <Dash></Dash>
-  )
-}
+  return <Dash></Dash>;
+};
 
-export default ChatPage
+export default ChatPage;

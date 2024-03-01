@@ -3,7 +3,7 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import SearchArea from "../search/SearchArea";
 import DashArea from "../admin/DashArea";
-import ChatArea from "../chat/ChatArea";
+import ChatArea from "../chat/chatarea";
 
 const RightSide = () => {
   const pathName = usePathname();
