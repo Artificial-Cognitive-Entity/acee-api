@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+/.next
 
 # testing
 /coverage
@@ -38,4 +39,3 @@ next-env.d.ts
 #keys
 service_cred.json
 
-.next/
