@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navigation/navbar/navbar";
+import ModeSwap from "./components/ModeSwap";
 
 // main root of the application 
 
@@ -19,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html data-theme="black" lang="en">
+    <html data-theme="business" lang="en">
       <body className={inter.className}>
         <Navbar />
         {children}

@@ -1,6 +1,6 @@
 "use client";
 // TODO: FORMAT SEARCH RESULTS SO IT LOOKS PRETTY
-// TODO: RIGHT CLICK SEARCH RESULT -> CHATBOT QUERY
+//       RIGHT CLICK SEARCH RESULT -> CHATBOT QUERY
 import React, { useEffect, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import Button from "../button";
@@ -21,7 +21,7 @@ const SearchArea = () => {
   };
 
   const onEnterPress = (e: any) => {
-    if (e.keyCode == 13 && e.shiftKey == false) {
+    if(e.keyCode == 13 && e.shiftKey == false) {
       e.preventDefault();
       handleAsked();
       handleSubmit(e);
@@ -51,15 +51,17 @@ const SearchArea = () => {
       });
 
       const response = await semanticSearch.json();
+      setAsked(true);
       setResult(response.result);
       setLoading(false);
     }
   };
 
+
   return (
     <div className="flex h-screen w-full flex-col overscroll-none">
       <form
-        className="w-full inline-flex items-center justify-center gap-8 mt-12 mb-5"
+        className=" mt-12 w-full flex justify-center items-center gap-1"
         onSubmit={handleSubmit}
         onKeyDown={onEnterPress}
       >
@@ -79,7 +81,7 @@ const SearchArea = () => {
           enter
         </Button>
       </form>
-      {!asked && <SearchGreeting></SearchGreeting>}
+
       {isLoading ? (
         <div className="flex h-full justify-center items-center">
           <Transition

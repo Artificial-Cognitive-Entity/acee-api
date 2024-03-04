@@ -15,7 +15,7 @@ const config: Config = withMT({
   },
   daisyui: {
     themeRoot: ":root",
-    themes: ["wireframe","black","lofi"],
+    themes: ["business", "wireframe", "cmyk", "retro","light","dark"],
   },
   plugins: [require("daisyui"), require("@tailwindcss/forms")],
 });

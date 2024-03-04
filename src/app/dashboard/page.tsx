@@ -1,10 +1,9 @@
 import React from 'react'
 import Dash from '../components/dashboard/dash'
 
+// dashboard to display content
 const Dashboard = () => {
-  return (
-    <Dash/>
-  )
-}
+  return <Dash />;
+};
 
-export default Dashboard
+export default Dashboard;
