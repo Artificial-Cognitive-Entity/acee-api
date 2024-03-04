@@ -37,3 +37,5 @@ next-env.d.ts
 
 #keys
 service_cred.json
+
+.next/
