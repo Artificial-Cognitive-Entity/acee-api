@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-// function to swap themes
+// function to swap website theme
 const ModeSwap = () => {
   const [theme, setTheme] = React.useState("black");
   const toggleTheme = () => {

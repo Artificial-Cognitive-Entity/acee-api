@@ -1,6 +1,6 @@
 "use client";
 // TODO: FORMAT SEARCH RESULTS SO IT LOOKS PRETTY
-//       RIGHT CLICK SEARCH RESULT -> CHATBOT QUERY
+// TODO: RIGHT CLICK SEARCH RESULT -> CHATBOT QUERY
 import React, { useEffect, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import Button from "../button";

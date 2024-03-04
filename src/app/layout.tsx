@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navigation/navbar/navbar";
-import ModeSwap from "./components/ModeSwap";
 
 // main root of the application 
 
