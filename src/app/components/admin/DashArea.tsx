@@ -3,24 +3,18 @@ import UserTable from "./UserTable";
 import Modal from "./Options/Modal";
 import Button from "../button";
 import AddUserIcon from "./CreateUser/AddUserIcon";
-import Success from "./CreateUser/Alerts";
 
-type MODALS = "CLOSED" | "CREATE" | "OPTIONS";
+type MODALS = "CLOSED" | "CREATE" | "CONFIRM";
 const DashArea = () => {
   const [showModal, setShowModal] = useState(false);
   const [currentModal, setCurrentModal] = useState<MODALS>("CLOSED");
 
-  const optModal = () => {
-    toggleModal("OPTIONS");
-  };
-
   const toggleModal = (type?: string) => {
-    
     setShowModal(!showModal);
 
     if (showModal) {
-      if (type == "OPTIONS") {
-        setCurrentModal("OPTIONS");
+      if (type == "CONFIRM") {
+        setCurrentModal("CONFIRM");
       } else {
         setCurrentModal("CREATE");
       }
@@ -31,10 +25,7 @@ const DashArea = () => {
 
   return (
     <>
-      <Modal
-        isOpen={!showModal}
-        type={currentModal}
-      />
+      <Modal isOpen={!showModal} type={currentModal} />
       <div className="flex justify-center items-center h-screen flex-col">
         <div className="flex flex-col w-full h-full rounded-md">
           <div className="flex justify-between items-center">
@@ -53,19 +44,20 @@ const DashArea = () => {
             </div>
             <div className="w-5/6 overflow-y-auto rounded-md">
               <div className=" flex justify-between items-center bg-base-100 rounded-t-md text-center p-3 w-full">
-                <br></br>
-                <p className="ml-14">people in your group</p>
+                <p>people in your group</p>
 
-                <Button
-                  onClick={() => {
-                    toggleModal("CREATE");
-                  }}
-                >
-                  <AddUserIcon />
-                </Button>
+                <div className="flex content-center justify-center gap-3">
+                  <Button
+                    onClick={() => {
+                      toggleModal("CREATE");
+                    }}
+                  >
+                    <AddUserIcon />
+                  </Button>
+                </div>
               </div>
               <div className="bg-base-300 rounded-b-md overflow-y-auto">
-                <UserTable callBackToDash={optModal}></UserTable>
+                <UserTable></UserTable>
               </div>
             </div>
           </div>
