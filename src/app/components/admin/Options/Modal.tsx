@@ -27,7 +27,7 @@ const Modal = ({ isOpen, type }: ModalProps) => {
       }
     };
 
-    if (type == "OPTIONS") {
+    if (type == "CONFIRM") {
       const element: HTMLDialogElement = getElement("adminModal");
       modalControls(element, isDone);
     } else if (type == "CREATE") {
@@ -36,13 +36,12 @@ const Modal = ({ isOpen, type }: ModalProps) => {
     }
   }, [isDone, type, isOpen]);
 
-  if (type == "OPTIONS") {
+  if (type == "CONFIRM") {
     return (
       <>
         <dialog id="adminModal" className="modal self-center">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">Hello!</h3>
-            <p className="py-4">Press sESC key or click outside to close</p>
+        <div className="modal-box flex justify-center rounded-lg">
+           Changes have been made
           </div>
           <form method="dialog" className="modal-backdrop w-full">
             <button>close</button>
