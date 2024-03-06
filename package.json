@@ -9,14 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@chakra-ui/react": "^2.8.2",
     "@google-cloud/aiplatform": "^3.10.0",
     "@headlessui/react": "^1.7.18",
     "@material-tailwind/react": "^2.1.0",
     "@styled-icons/bootstrap": "^10.47.0",
     "@styled-icons/entypo": "^10.46.0",
-    "@styled-icons/icomoon": "^10.46.0",
-    "@styled-icons/material": "^10.47.0",
     "@styled-icons/simple-icons": "^10.46.0",
     "@tailwindcss/forms": "^0.5.7",
     "@tanstack/react-table": "^8.13.2",
