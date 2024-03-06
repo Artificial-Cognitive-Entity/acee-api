@@ -132,7 +132,8 @@ const UserForm = () => {
                 Select a Role
               </option>
               <option value="user">User</option>
-              <option value="admin">Admin</option>
+              <option value="admin">Administrator</option>
+              <option value="admin">Moderator</option>
               <option value="guest">Guest</option>
             </select>
 
