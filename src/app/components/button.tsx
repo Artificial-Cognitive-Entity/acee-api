@@ -8,10 +8,16 @@ interface Props extends React.HTMLProps<HTMLButtonElement> {
   className?: string;
   type?: "submit" | "reset" | "button";
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  name?: string;
 }
-const Button = ({ onClick, type, className = "", children }: Props) => {
+const Button = ({ onClick, type, className = "", children, name }: Props) => {
   return (
-    <button type={type} className={cn("btn btn-active", className)} onClick={onClick}>
+    <button
+      type={type}
+      className={cn("btn btn-active rounded-md", className)}
+      name={name}
+      onClick={onClick}
+    >
       {children}
     </button>
   );
