@@ -28,11 +28,15 @@ export async function POST(req: Request) {
         You are able to answer the user's questions based on documents in the database. Do not use any sources other than the relevant documents provided.
         The relevant documents found in the database for this query are:\n\n
         
-        Project Title: ${relevantDocs.title}
-        Number of Issues: ${relevantDocs.total_issues}
-        Project Status: ${relevantDocs.project_status}
+        Title: ${relevantDocs.node_title}
+        Type: ${relevantDocs.node_type}
+        Url: ${relevantDocs.url}
         Content: ${relevantDocs.content}
-        
+        Content Type: ${relevantDocs.content_type}
+        Data Source: ${relevantDocs.data_source}
+        Last Updated: ${relevantDocs.last_updated}        
+
+        The time in the last updated field is in 24 hour time. Convert it to the AM/PM format. Do not include the seconds.
         `,
       };
     } else {
