@@ -1,5 +1,4 @@
 import * as typechat from "typechat";
-import OpenAI from "openai";
 import { readFileSync } from "fs";
 import path from "path";
 import { Question } from "./searchSchema";
