@@ -97,40 +97,64 @@ const SearchArea = () => {
           </Transition>
         </div>
       ) : (
-        <div className=" mt-12 mb-12 flex justify-center self-center overflow-y-auto w-9/12 h-screen">
-          {results.length > 0 ? (
-            <div className="flex flex-col content-center text-base rounded-lg w-full">
-              {results.map((project, index) => (
-                <SearchResult project={project} key={index}></SearchResult>
-              ))}
-            </div>
+        <>
+          {asked ? (
+            !results.length ? (
+              <div className="w-full flex content-center justify-center">
+                0 search results found
+              </div>
+            ) : results.length == 1 ? (
+              <div className="w-full flex content-center justify-center">
+                {results.length} search result found
+              </div>
+            ) : (
+              <div className="w-full flex content-center justify-center">
+                {results.length} search results found
+              </div>
+            )
           ) : (
-            <div>
-              {asked ? (
-                <div>
-                  <Transition
-                    appear={true}
-                    show={!isLoading}
-                    enter="transition-all ease-in-out duration-500 delay-[200ms]"
-                    enterFrom="opacity-0 translate-y-9"
-                    enterTo="opacity-100 translate-y-0"
-                    leave="transition-all ease-in-out duration-500"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                    className="inline-flex justify-center items-center flex-col"
-                  >
-                    <NotFound />
-                    <div className="text-3xl">
-                      Sorry, we could not find anything.
-                    </div>
-                  </Transition>
-                </div>
-              ) : (
-                <div></div>
-              )}
-            </div>
+            <></>
           )}
-        </div>
+
+          <div className=" mt-12 mb-12 flex justify-center self-center overflow-y-auto w-9/12 h-screen">
+            {results.length > 0 ? (
+              <>
+                <div className="flex flex-col content-center text-base rounded-lg w-full">
+                  {results.map((project, index) => (
+                    <SearchResult project={project} key={index}></SearchResult>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div>
+                {asked ? (
+                  <div>
+                    <Transition
+                      appear={true}
+                      show={!isLoading}
+                      enter="transition-all ease-in-out duration-500 delay-[200ms]"
+                      enterFrom="opacity-0 translate-y-9"
+                      enterTo="opacity-100 translate-y-0"
+                      leave="transition-all ease-in-out duration-500"
+                      leaveFrom="opacity-100"
+                      leaveTo="opacity-0"
+                      className="inline-flex justify-center items-center flex-col"
+                    >
+                      <NotFound />
+                      <div className="text-3xl text-center">
+                        Sorry, we could not find anything.
+                        <br />
+                        Try something else!
+                      </div>
+                    </Transition>
+                  </div>
+                ) : (
+                  <div></div>
+                )}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
