@@ -1,7 +1,7 @@
 import { generatePassword } from "@/app/lib/generatePassword";
 import Translator, { ContentTranslator } from "../../lib/typechat/translator";
+import { format, parseISO } from "date-fns";
 import { geckoEmbedding } from "@/app/lib/models/vertexai";
-import { Question } from "@/app/lib/typechat/searchSchema";
 import mysql from "mysql2/promise";
 
 const HOST = process.env.HOST;
@@ -9,8 +9,51 @@ const PASSWORD = process.env.PASSWORD;
 const USER = process.env.SINGLESTORE_USER;
 const DATABASE = process.env.DATABASE;
 
+interface ItemNode {
+  content?: string;
+  content_type: string;
+  source: string;
+  last_updated: string;
+}
+
+interface JiraNode extends ItemNode {
+  issue_title: string;
+  issue_description: string;
+  status: string;
+  issue_type: string;
+  assignee: string;
+  completion: string;
+  issue_created: string;
+}
+
+interface ChildNode {
+  child_title: string;
+  child_id: string;
+  child_type: string;
+  child_url: string;
+  items: Array<ItemNode>;
+}
+
+interface ParentNode {
+  parent_title: string;
+  parent_id: string;
+  parent_type: string;
+  parent_url: string;
+  parent_content: string;
+  parent_content_type: string;
+  parent_source: string;
+  children_ids: Array<string>;
+  children: Array<ChildNode>;
+}
+
+interface ID {
+  node_id: string;
+  content_id: string;
+  score?: number;
+}
+
 if (!HOST || !PASSWORD || !USER) {
-  throw Error("db info scuffed");
+  throw Error("Database variable HOST, PASSWORD, or USER is missing ");
 }
 
 //this function connects to singlestoredb
@@ -141,11 +184,17 @@ export async function findRelevantDocs({
     const embedQuery =
       "SELECT content_id, DOT_PRODUCT_F64(JSON_ARRAY_PACK_F64('[" +
       embedding +
-      "]'), embedding) AS score FROM embeddings ORDER BY score DESC LIMIT 1";
+      "]'), embedding) AS score FROM embeddings ORDER BY score DESC LIMIT 3";
 
-    const res: any = await getIDs(conn, embedQuery, "chat");
-    const relevantDoc = await getDocument(conn, res.content_id, "chat");
-    return relevantDoc;
+    const res: Array<ID> = await getIDs(conn, embedQuery, "chat");
+    let array: Array<any> = [];
+
+    for (let i = 0; i < res.length; i++) {
+      await groupByParent(array, conn, res[i]);
+    }
+
+    // console.log(array);
+    return array;
   } catch (error) {
     console.log(error);
     return error;
@@ -172,7 +221,6 @@ export async function searchDatabase({
     let parsedInput: any;
     let embedding;
     let response: any = await Translator().translate(input);
-
     //response went through, embedd the description field
     if (response.success) {
       parsedInput = JSON.parse(JSON.stringify(response.data, undefined, 3)); // turn it into a JSON object
@@ -188,25 +236,26 @@ export async function searchDatabase({
       embedding +
       "]'), embedding) AS score FROM embeddings ORDER BY score DESC LIMIT 10 ";
 
-    const res: any = await getIDs(conn, embedQuery, "search");
-
+    const res: Array<ID> = await getIDs(conn, embedQuery, "search");
+    // console.log(res);
     let projects: any = [];
 
     for (let i = 0; i < res.length; i++) {
-      if (res[i].score > 0.5) {
-        // const document = await getDocument(
-        //   conn,
-        //   res[i],
-        //   parsedInput.result[0].filter.type
-        // );
-        await groupByParent(
-          projects,
-          conn,
-          res[i],
-          parsedInput.result[0].filter.type
-        );
+      if (res[i].score! > 0.65) {
+        if (parsedInput.result[0].filter)
+          await groupByParent(
+            projects,
+            conn,
+            res[i],
+            parsedInput.result[0].filter.type
+          );
+        else {
+          await groupByParent(projects, conn, res[i]);
+        }
       }
     }
+    projects = removeEmptyProjects(projects);
+    // console.log(JSON.stringify(projects, null, 4));
     return projects;
   } catch (error) {
     console.log(error);
@@ -220,63 +269,89 @@ export async function searchDatabase({
 
 // to group jira issues by project
 async function groupByParent(
-  projArr: any,
+  projects: any,
   conn: mysql.Connection,
   result: any,
   filter?: string
 ) {
-  
   const document = await getDocument(conn, result, "search", filter);
 
-  // TODO: GROUP DOCUMENTS BY THEIR PARENT
-  // CHECK IF DOCUMENT IS A PARENT (PARENT_ID == NULL)
-  // IF DOCUMENT IS A PARENT, CHECK IF IT HAS A CHILDREN
-  // IF PARENT, ADD THE NODE TO THE PROJECT
+  if (document == null) {
+    return;
+  }
 
-  // IF DOCUMENT IS A PARENT, MAKE DOCUMENT A ROOT KEY, ADD CHILDREN ARRAY
-  // IF DOCUMENT IS A CHILD, IT MUST HAVE A PARENT_ID.
-  // GET PARENT_ID AND ADD IT TO THE CORRECT PLACE IN THE PROJECT
+  // console.log(projects);
+  // console.log("LOOKING A THTIS SUTPUD FUCKING DOCUMENT");
+  // console.log(document);
+  // document is the root node
 
+  const node_result = findNode(document.node_id, projects);
+  if (document.parent_id == null && node_result == -1) {
+    const root: ParentNode = {
+      parent_title: document.node_title,
+      parent_id: document.node_id,
+      parent_type: document.node_type,
+      parent_url: document.url,
+      parent_content: document.content,
+      parent_content_type: document.content_type,
+      parent_source: document.data_source,
+      children_ids: document.children_ids,
+      children: [],
+    };
+    // console.log("ADDING ROOT\n");
+    projects.push(root);
+  } 
 
+  // find the parent
+  else {
 
-
-  /*
-
-
-  [
+    if(document.parent_id == null)
     {
-        "node_title": "Security Operations Center",
-        "node_type": "space",
+      return;
+    }
+    // console.log(projects);
+    const parentIndex = findParent(document.parent_id, projects);
 
-        "children": [
-          {
-              "node_title": "Security Operations Center Home",
-              "node_type": "page",
-              "children"
-
-
-          }
-
-
-
-
-        ]
-
-
-
-
-
-
+    // parent was found
+    if (parentIndex != -1) {
+      // add child
+      // console.log("PARENT FOUND");
+      await addChild(parentIndex, document, projects);
     }
 
+    // child node (like page) is pulled in as a result before its parent (like space)
+    //  query the database for the parent
+    else {
+      // get document's parent
+      // console.log("PARENT NOT FOUND");
+      const parent = await getNode(conn, document.parent_id);
 
+      // console.log(parent);
 
+      // get parent's content
+      const query = `
+          SELECT content, content_type FROM contents WHERE node_id = '${parent.node_id}'`;
+      const parent_content = await getContent(conn, query);
 
+      const parent_obj: ParentNode = {
+        parent_title: parent.node_title,
+        parent_id: parent.node_id,
+        parent_type: parent.node_type,
+        parent_url: parent.url,
+        parent_content: parent_content.content,
+        parent_content_type: parent_content.content_type,
+        parent_source: parent.data_source,
+        children_ids: JSON.parse(parent.children_ids),
+        children: [],
+      };
 
+      projects.push(parent_obj);
 
+      const parent_index = findParent(parent_obj.parent_id, projects);
 
-  ]
-  */
+      await addChild(parent_index, document, projects);
+    }
+  }
 }
 
 //get and format doc into json
@@ -291,43 +366,50 @@ async function getDocument(
   const content_id = result.content_id;
   const node_id = result.node_id;
 
-  // if (filter) {
-  //   query = `
-  //   SELECT content, content_type FROM contents WHERE content_id = '"${content_id}"' AND content_type = '"${filter}"'
-  //   `;
-  // } else {
-  //   query = `
-  //   SELECT content, content_type FROM contents WHERE content_id = '"${content_id}"'`;
-  // }
+  if (filter) {
+    query = `
+    SELECT content, content_type FROM contents WHERE content_id = '${content_id}' AND content_type = '${filter}'
+    `;
+  } else {
+    query = `
+    SELECT content, content_type FROM contents WHERE content_id = '${content_id}'`;
+  }
 
-  query = `
-  SELECT content, content_type FROM contents WHERE content_id = '"${content_id}"'`;
   let content: any = await getContent(conn, query);
-
   let node: any = await getNode(conn, node_id);
+
+  if (content == null) {
+    return;
+  }
+
+  console.log(
+    `\nNODE TITLE: ${node.node_title}\nDATA SOURCE: ${node.data_source}\nPARENT_ID: ${node.parent_id}\nNODE_ID:${node.node_id} `
+  );
 
   if (type == "search") {
     return {
-      node_title: node.node_title.replace(/["]+/g, ""),
-      node_type: node.node_type.replace(/["]+/g, ""),
-      content: content.content.replace(/["]+/g, ""),
-      content_type: content.content_type.replace(/["]+/g, ""),
-      url: node.url.replace(/["]+/g, ""),
-      data_source: node.data_source.replace(/["]+/g, ""),
-      last_updated: node.last_updated.replace(/["]+/g, ""),
-      parent_id: node.parent_id.replace(/["]+/g, ""),
-      children_ids: node.parent_id.replace(/["]+/g, ""),
+      node_title: node.node_title,
+      node_id: node_id,
+      node_type: node.node_type,
+      content: content.content,
+      content_type: content.content_type,
+      url: node.url,
+      data_source: node.data_source,
+      last_updated: node.last_updated,
+      parent_id: node.parent_id == "null" ? null : node.parent_id,
+      children_ids: JSON.parse(node.children_ids),
     };
   }
 
   return {
-    node_title: node.node_title.replace(/["]+/g, ""),
-    node_type: node.node_type.replace(/["]+/g, ""),
-    content: content.content.replace(/["]+/g, ""),
-    content_type: content.content_type.replace(/["]+/g, ""),
-    url: node.url.replace(/["]+/g, ""),
-    data_source: node.data_source.replace(/["]+/g, ""),
-    last_updated: node.last_updated.replace(/["]+/g, ""),
+    node_title: node.node_title,
+    node_type: node.node_type,
+    content: content.content,
+    content_type: content.content_type,
+    url: node.url,
+    data_source: node.data_source,
+    last_updated: node.last_updated,
+    parent_id: node.parent_id == "null" ? null : node.parent_id,
   };
 }
 
@@ -338,7 +420,7 @@ async function getContent(conn: mysql.Connection, query: string) {
 
 async function getNode(conn: mysql.Connection, node_id: string) {
   const query = `
-  SELECT node_type, node_title, url, data_source, last_updated, parent_id, children_ids FROM nodes WHERE node_id = '"${node_id}"'
+  SELECT node_type, node_title, url, data_source, last_updated, parent_id, node_id, children_ids FROM nodes WHERE node_id = '${node_id}'
   `;
   const result: any = await conn.query(query);
   return result[0][0];
@@ -352,32 +434,177 @@ async function getIDs(conn: mysql.Connection, query: string, type: string) {
   let node_id = "";
 
   // return is different based on whether this is for a search or  chat function
-  let result = [];
+  let result: Array<ID> = [];
 
-  if (type == "search") {
-    // get the node id by splitting by the dash, return the sim. score
-    // extract the node id from the content id
-    for (let i = 0; i < search_result.length; i++) {
-      // get content id
-      content_id = search_result[i].content_id.replace(/["]+/g, "");
+  // get the node id by splitting by the dash, return the sim. score
+  // extract the node id from the content id
+  let node_info: ID = {
+    node_id: "",
+    content_id: "",
+  };
+  for (let i = 0; i < search_result.length; i++) {
+    // get content id
+    content_id = search_result[i].content_id;
+    //extract node id from content_id
+    node_id = search_result[i].content_id.split("-")[0];
 
-      //extract node id from content_id
-      node_id = search_result[i].content_id.split("-")[0].replace(/["]+/g, "");
-
-      result.push({
+    if (type == "search") {
+      node_info = {
         node_id: node_id,
         content_id: content_id,
         score: search_result[i].score,
-      });
+      };
+    } else {
+      node_info = {
+        node_id: node_id,
+        content_id: content_id,
+      };
     }
 
-    return result;
+    result.push(node_info);
   }
 
-  content_id = search_result[0].content_id.replace(/["]+/g, "");
-  node_id = search_result[0].content_id.split("-")[0].replace(/["]+/g, "");
+  return result;
+}
 
-  // return for chat use
-  // TODO: REDO
-  return { node_id: node_id, content_id: content_id };
+async function getJiraContent(document: any) {
+  // console.log("INSIDE GET JIRA CONTENT");
+  const parsedContent = await parseJira(document.content);
+  // console.log(parsedContent);
+
+  const jira: JiraNode = {
+    content_type: document.content_type,
+    last_updated: document.last_updated,
+    source: document.data_source,
+    issue_title: parsedContent.issue_title,
+    issue_description: parsedContent.issue_description,
+    status: parsedContent.status,
+    issue_type: parsedContent.issue_type,
+    assignee: parsedContent.assignee,
+    issue_created: formatDateString(parsedContent.issue_created),
+    completion:
+      parsedContent.completion == "Not completed"
+        ? "Not completed"
+        : formatDateString(parsedContent.completion),
+  };
+
+  return jira;
+}
+
+async function parseJira(content: string) {
+  // console.log("INSIDE TRANSLATOR");
+  let response: any = await ContentTranslator().translate(content);
+  //response went through, embedd the description field
+  const parsedInput = JSON.parse(JSON.stringify(response.data, undefined, 3)); // turn it into a JSON object
+  return parsedInput.result[0];
+}
+
+async function addChild(parentIndex: number, document: any, projects: any) {
+  const childIndex = findChild(document.node_id, parentIndex, projects);
+
+  // child node was found to add to the items array
+  if (childIndex != -1) {
+    // console.log("CHILD FOUND");
+    if (document.data_source == "jira") {
+      const jira = await getJiraContent(document);
+      projects[parentIndex].children[childIndex].items.push(jira);
+    } else {
+      const item: ItemNode = {
+        content: document.content,
+        content_type: document.content_type,
+        last_updated: document.last_updated,
+        source: document.data_source,
+      };
+
+      projects[parentIndex].children[childIndex].items.push(item);
+    }
+    // console.log("CHILD FOUND");
+    // console.log(
+    //   `ADDING ${item.id} TO ${projects[parentIndex].children[childIndex].child_id} IN ${projects[parentIndex].parent_id}`
+    // );
+  }
+
+  // not found make a new child object
+  else {
+    // console.log("CHILD NOT FOUND, MAKING NEW CHILD NODE");
+    const child: ChildNode = {
+      child_title: document.node_title,
+      child_id: document.node_id,
+      child_type: document.node_type,
+      child_url: document.url,
+      items: [],
+    };
+
+    if (document.data_source == "jira") {
+      // console.log("DOCUMENT IS FROM JIRA");
+      // console.log(`PARSING ${document.content}`);
+      const jira = await getJiraContent(document);
+      child.items.push(jira);
+      projects[parentIndex].children.push(child);
+    } else {
+      // console.log(`THIS IS FROM: ${document.data_source}`);
+      const item: ItemNode = {
+        content: document.content,
+        content_type: document.content_type,
+        last_updated: document.last_updated,
+        source: document.data_source,
+      };
+
+      child.items.push(item);
+      projects[parentIndex].children.push(child);
+    }
+
+    // console.log("CHILD NOT FOUND");
+    // console.log(`PARENT LOCATED AT ${parentIndex}`);
+    // console.log(
+    //   `ADDING ${item.id} TO ${child.child_id} IN ${projects[parentIndex].parent_id}`
+    // );
+  }
+}
+// find parent node
+function findParent(parent_id: string, projects: any) {
+  const parent = projects.find((obj: any) => {
+    return obj.parent_id == parent_id;
+  });
+  return projects.indexOf(parent);
+}
+
+function findNode(node_id: string, projects: any) {
+  const node = projects.find((obj: any) => {
+    return obj.parent_id == node_id;
+  });
+
+  return projects.indexOf(node);
+}
+
+// find child node
+function findChild(child_id: string, parentIndex: number, projects: any) {
+  let target: any = null;
+  projects.find((obj: any) => {
+    if (obj.children) {
+      const res = obj.children.find((child: any) => {
+        if (child.child_id == child_id) {
+          return child;
+        } else {
+          return null;
+        }
+      });
+
+      target = res;
+    }
+  });
+
+  return projects[parentIndex].children.indexOf(target);
+}
+
+// find grandparent node
+function removeEmptyProjects(projects: any) {
+  // console.log("REMOVING EMPTY PROJECTS");
+  return projects.filter((project: ParentNode) => project.children.length > 0);
+}
+
+function formatDateString(formatee: string) {
+  const originalDate = parseISO(formatee);
+
+  return format(originalDate, "yyyy-MM-dd HH:mm:ss");
 }
