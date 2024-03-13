@@ -10,15 +10,24 @@ export async function verifyAndReset(req: Request) {
         return Response.json({ message: "Method Not Allowed" }, { status: 405 });
     }
 
-    const { verificationToken, newPassword } = await req.json();
+    const body = await req.json();
+    console.log(body);
+
+    if (!body.password || !body.token) {
+        //res.status(400).json({ error: 'Email is required' });
+        return Response.json(
+            {error: "Password and Token are required"},
+            {status: 400}
+        );
+    }
 
     try {
         const db = await connectSingleStore(); // Connect to your database
 
         // Step 1: Validate verificationToken and find the user.
         // Replace 'your_user_table' with your actual user table name
-        const findUserQuery = `SELECT * FROM your_user_table WHERE verificationToken = ? LIMIT 1`;
-        const user = await db.query(findUserQuery, [verificationToken]);
+        const findUserQuery = `SELECT * FROM users WHERE token = ? LIMIT 1`;
+        const user = await db.query(findUserQuery, [body.token]);
 
         if (user == null) {
             // No user found with the given verificationToken
@@ -26,11 +35,11 @@ export async function verifyAndReset(req: Request) {
         }
 
         // Step 2: Hash newPassword.
-        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+        const hashedPassword = await bcrypt.hash(body.password, saltRounds);
 
         // Step 3: Update user's status to 'active' and set the new hashed password.
         const updateUserQuery = `UPDATE your_user_table SET password = ?, status = 'active' WHERE verificationToken = ?`;
-        await db.query(updateUserQuery, [hashedPassword, verificationToken]);
+        await db.query(updateUserQuery, [hashedPassword, body.token]);
 
         // Close the database connection if needed
         // await db.close();

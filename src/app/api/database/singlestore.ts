@@ -37,6 +37,37 @@ export async function stopSingleStore(conn: mysql.Connection) {
   await conn.end();
 }
 
+//search for token in users table
+export async function findToken({
+  conn,
+  token,
+}: {
+  conn?: mysql.Connection;
+  token: string;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query: any = `SELECT * FROM users WHERE token = "${token}"`;
+    const result: any = await conn.query(query);
+
+    if (result) {
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
 //search for duplicate email address in users table
 export async function findEmail({
   conn,

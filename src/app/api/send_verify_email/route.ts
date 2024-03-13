@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     console.log(body);
 
-    if (!body.email) {
+    if (!body.email || !body.token) {
         //res.status(400).json({ error: 'Email is required' });
         return Response.json(
             {error: "Email is required"},
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         );
     }
 
-    const verificationToken = crypto.randomBytes(20).toString('hex');
+    //const verificationToken = crypto.randomBytes(20).toString('hex');
     // Assuming updateUserVerificationToken updates the user's record with the verification token
     // This part of the logic is omitted for brevity
 
@@ -39,12 +39,14 @@ export async function POST(req: Request) {
            pass: process.env.EMAIL_PASSWORD,
         },
         debug: false,
-        logger: true   //<---highly recommend this one here
+        logger: true
     });
 
     //when a user is created, create a jwt token as a user variable, use it at the end of the url,
     //then the url takes the token and compares it in the database to find what users password to update
-    const verificationLink = `http://localhost:3000/verify_email/${verificationToken}`;
+
+    //TODO: hash token?
+    const verificationLink = `http://localhost:3000/verify_email/${body.token}`;
 
     try {
         await transporter.sendMail({
