@@ -67,23 +67,23 @@ const columns = [
 const UserTable = () => {
   const users = [
     {
-      first_name: "Dummy",
-      last_name: "The First",
-      email: "dummy1@org.com",
+      first_name: "Jane Doe",
+      last_name: "Doe",
+      email: "jd@org.com",
       role: "User",
       status: "Locked",
     },
     {
-      first_name: "Dummy",
-      last_name: "The Second",
-      email: "dummy2@org.com",
+      first_name: "John",
+      last_name: "Smith",
+      email: "js@org.com",
       role: "Moderator",
       status: "Unverified",
     },
     {
-      first_name: "Dummy",
-      last_name: "The Third",
-      email: "dummy3@org.com",
+      first_name: "George",
+      last_name: "Michael",
+      email: "gm@org.com",
       role: "Guest",
       status: "Locked",
     },

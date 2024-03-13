@@ -1,14 +1,13 @@
-// the following is a schema definition for querying our wikipedia/book database
+// the following is a schema definition for querying our database
 export interface Question {
   result: Query[];
 }
-
-//TODO: SCHEMA NEEDS TWEAKING
 
 //use this type for user queries
 export interface Query {
   //anything the user enters should go here,
   description: string;
+  // if the user specifies a filter it should go here
   filter?: ContentType;
 }
 
@@ -16,10 +15,6 @@ export type ContentType =
   | Image
   | Code
   | Author
-  | Issue
-  | Description
-  | Assignee
-  | Status
   | Text
   | Title;
 
@@ -35,21 +30,6 @@ export interface Author {
   type: "author";
 }
 
-export interface Issue {
-  type: "issue";
-}
-
-export interface Assignee {
-  type: "assignee";
-}
-
-export interface Description {
-  type: "description";
-}
-
-export interface Status {
-  type: "status";
-}
 export interface Text {
   type: "text";
 }

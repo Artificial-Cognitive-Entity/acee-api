@@ -29,12 +29,12 @@ const DashArea = () => {
       <div className="flex justify-center items-center h-screen flex-col">
         <div className="flex flex-col w-full h-full rounded-md">
           <div className="flex justify-between items-center">
-            <div className="bg-primary w-1/4 h-1/12 text-center rounded-md text-xl m-3 p-3 font-bold">
-              YOUR GROUP NAME
+            {/* <div className="bg-primary w-2/12 h-2/12 text-center rounded-md text-lg m-3 p-3 font-bold">
+              Your Group: sdl32
             </div>
             <div className="bg-primary w-2/12 h-2/12 text-center rounded-md text-lg m-3 p-3 font-bold">
-              YOUR USER ROLE
-            </div>
+              Your Role: Administrator
+            </div> */}
           </div>
 
           <div className="flex flex-col justify-center items-center h-full gap-5 ml-3 mr-3 mb-12 rounded-md overflow-y-auto">

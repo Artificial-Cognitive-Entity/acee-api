@@ -9,14 +9,20 @@ const config: Config = withMT({
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {animation: {
-      'pulse': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-    }},
+    extend: {
+      animation: {
+        pulse: "pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+    },
   },
   daisyui: {
     themeRoot: ":root",
     themes: ["wireframe", "black"],
   },
-  plugins: [require("daisyui"), require("@tailwindcss/forms")],
+  plugins: [
+    require("daisyui"),
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/typography"),
+  ],
 });
 export default config;

@@ -5,12 +5,12 @@ import TextareaAutosize from "react-textarea-autosize";
 import Button from "../button";
 import { Message } from "ai";
 import { PersonCircle } from "@styled-icons/bootstrap";
-import { useEffect, useRef, useState } from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import TrashIcon from "@/app/components/chat/trash";
 import { RobotImage } from "./RobotIcon";
 import { ChatLoader } from "@/app/lib/loader";
-import { Transition } from "@headlessui/react";
-import ChatGreeting from "./ChatGreeting";
+import { ChatGreeting } from "./ChatGreeting";
+import ChatBubble from "./ChatBubble";
 
 export default function ChatArea() {
   const [time, setTime] = useState("");
@@ -19,10 +19,13 @@ export default function ChatArea() {
   const getTimeStamp = () => {
     const hours_24 = new Date().getHours();
     const period = hours_24 >= 12 ? "PM" : "AM";
+    const hours = hours_24 > 12 ? Math.abs(hours_24 - 12) : hours_24;
 
-    const hours = Math.abs(hours_24 - 12);
-    const timestamp = `${hours}:${new Date().getMinutes().toString().padStart(2, '0')} ${period}`;
-    setTime(timestamp);
+    const timestamp = `${hours}:${new Date()
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")} ${period}`;
+    return timestamp;
   };
 
   const {
@@ -33,6 +36,7 @@ export default function ChatArea() {
     setMessages,
     isLoading,
     error,
+    setInput,
   } = useChat(); // automatically makes a request to /api/chat
 
   const onEnterPress = (e: any) => {
@@ -54,38 +58,44 @@ export default function ChatArea() {
   const lastMessageIsUser = messages[messages.length - 1]?.role === "user";
 
   return (
-
     <div className={cn("h-screen w-full overscroll-none")}>
       <div className="flex flex-col rounded shadow-xl h-full">
         <div className="h-full mt-3 mb-3 px-3 overflow-y-auto" ref={scrollRef}>
-        {messages.length > 0 ? <>{messages.map((message) => (
-            <ChatMessage message={message} key={message.id} time={time} />
-          ))}
+          {messages.length > 0 ? (
+            <>
+              {messages.map((message) => (
+                <ChatMessage
+                  message={message}
+                  key={message.id}
+                  time={getTimeStamp}
+                />
+              ))}
 
-          {isLoading && lastMessageIsUser && (
-            <ChatMessage
-              message={{
-                role: "assistant",
-                content: "COMING UP WITH A RESPONSE FOR THE USER",
-              }}
-              time={""}
-            ></ChatMessage>
+              {isLoading && lastMessageIsUser && (
+                <ChatMessage
+                  message={{
+                    role: "assistant",
+                    content: "COMING UP WITH A RESPONSE FOR THE USER",
+                  }}
+                  time={() => {
+                    return "";
+                  }}
+                ></ChatMessage>
+              )}
+
+              {error && (
+                <ChatMessage
+                  message={{
+                    role: "assistant",
+                    content: "Something went wrong! Please try again.",
+                  }}
+                  time={getTimeStamp}
+                ></ChatMessage>
+              )}
+            </>
+          ) : (
+            <ChatGreeting setInput={setInput}></ChatGreeting>
           )}
-
-          {error && (
-            <ChatMessage
-              message={{
-                role: "assistant",
-                content: "Something went wrong! Please try again.",
-              }}
-              time={time}
-            ></ChatMessage>
-          )}</> :
-       
-           <ChatGreeting></ChatGreeting>
-           }
-          
-
         </div>
         <form
           onSubmit={handleSubmit}
@@ -109,7 +119,11 @@ export default function ChatArea() {
             autoFocus
             id="usermsg"
           ></TextareaAutosize>
-          <Button type="submit" className="w-1/12 rounded-lg" onClick={getTimeStamp}>
+          <Button
+            type="submit"
+            className="w-1/12 rounded-lg"
+            onClick={getTimeStamp}
+          >
             enter
           </Button>
         </form>
@@ -123,7 +137,7 @@ function ChatMessage({
   time,
 }: {
   message: Pick<Message, "role" | "content">;
-  time: string;
+  time: () => string;
 }) {
   const isAiMessage = role === "assistant";
 
@@ -139,64 +153,48 @@ function ChatMessage({
       >
         {isAiMessage && <RobotImage className="mr-2"></RobotImage>}
 
-        <div className="chat-header">
+        {/* framer motion for animations? */}
+        <div className="chat-header text-left max-w-12">
           {isAiMessage && (
             <>
               <div className="">
                 <div>ACEE</div>{" "}
-                <time className="text-xs opacity-50">{time}</time>
+                <time className="text-xs opacity-50">{time()}</time>
               </div>
             </>
           )}
         </div>
         {isAiMessage && content == "COMING UP WITH A RESPONSE FOR THE USER" ? (
-          <Transition
-            appear={true}
-            show={true}
-            enter="transition-all ease-in-out duration-500 delay-[200ms]"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition-all ease-in-out duration-500"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="chat-bubble chat-bubble-primary text-lg flex justify-center items-center">
-              <ChatLoader></ChatLoader>
-            </div>
-          </Transition>
+          <div className="chat-bubble chat-bubble-primary text-lg flex justify-center items-center rounded-lg">
+            <ChatLoader></ChatLoader>
+          </div>
         ) : (
-          <Transition
-            appear={true}
-            show={true}
-            enter="transition-all ease-in-out duration-500 delay-[200ms]"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition-all ease-in-out duration-500"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
+          <>
             {isAiMessage &&
             content == "Something went wrong! Please try again." ? (
-              <div className="chat-bubble chat-bubble-error text-primary-content text-lg text-left">
+              <div className="chat-bubble chat-bubble-error text-primary-content text-lg text-left whitespace-normal ">
                 {content}
               </div>
             ) : (
-              <div className="chat-bubble chat-bubble-primary text-primary-content text-lg">
-                {content}
+              <div className="prose chat-bubble chat-bubble-primary text-primary-content text-lg whitespace-normal rounded-lg">
+                <ChatBubble content={content}></ChatBubble>
               </div>
             )}
-          </Transition>
+          </>
         )}
 
-        <div className="chat-header">
+        <div className="chat-header text-right">
           {!isAiMessage && (
             <>
-              <div>User</div> <time className="text-xs opacity-50">{time}</time>
+              <div className="text-right max-w-12">
+                <div>User</div>{" "}
+                <time className="text-xs opacity-50">{time()}</time>
+              </div>
             </>
           )}
         </div>
         {!isAiMessage && (
-          <PersonCircle className="ml-2 w-12 h-12 grow-0 shrink-0 basis-auto "></PersonCircle>
+          <PersonCircle className="w-12 h-12 grow-0 shrink-0 basis-auto "></PersonCircle>
         )}
       </div>
     </>
