@@ -3,6 +3,7 @@ import Translator, { ContentTranslator } from "../../lib/typechat/translator";
 import { format, parseISO } from "date-fns";
 import { geckoEmbedding } from "@/app/lib/models/vertexai";
 import mysql from "mysql2/promise";
+import { NutFill } from "@styled-icons/bootstrap";
 
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
@@ -184,7 +185,7 @@ export async function findRelevantDocs({
     const embedQuery =
       "SELECT content_id, DOT_PRODUCT_F64(JSON_ARRAY_PACK_F64('[" +
       embedding +
-      "]'), embedding) AS score FROM embeddings ORDER BY score DESC LIMIT 3";
+      "]'), embedding) AS score FROM embeddings ORDER BY score DESC";
 
     const res: Array<ID> = await getIDs(conn, embedQuery, "chat");
     let array: Array<any> = [];
@@ -197,7 +198,7 @@ export async function findRelevantDocs({
     return array;
   } catch (error) {
     console.log(error);
-    return error;
+    return null;
     //!IMPORTANT! end connection after each query
   } finally {
     if (conn) {
