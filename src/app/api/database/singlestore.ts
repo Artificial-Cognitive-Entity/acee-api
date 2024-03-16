@@ -2,9 +2,9 @@ import { generatePassword } from "@/app/lib/generatePassword";
 import Translator, { ContentTranslator } from "../../lib/typechat/translator";
 import { format, parseISO } from "date-fns";
 import { geckoEmbedding } from "@/app/lib/models/vertexai";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import mysql from "mysql2/promise";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
@@ -113,13 +113,12 @@ export async function findToken({
   }
 }
 
-
 // Generate JWT
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {
-    expiresIn: '30d',
-  })
-}
+    expiresIn: "30d",
+  });
+};
 //search for duplicate email address in users table
 export async function findEmail({
   conn,
@@ -134,6 +133,84 @@ export async function findEmail({
     }
 
     const query: any = `SELECT * FROM users WHERE email = "${email.toLowerCase()}"`;
+    const result: any = await conn.query(query);
+
+    if (result) {
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
+//  delete user
+export async function deleteUser({
+  conn,
+  user_id,
+}: {
+  conn?: mysql.Connection;
+  user_id: string;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query = `DELETE FROM users WHERE user_id =${user_id}`;
+
+    const result: any = await conn.query(query);
+
+    if (result) {
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
+// update user
+export async function updateUser({
+  conn,
+  first_name,
+  last_name,
+  role,
+  user_id,
+  status,
+}: {
+  conn?: mysql.Connection;
+  first_name: string;
+  last_name: string;
+  role: string;
+  user_id: string;
+  status: string;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const insertRoles = {
+      roles: [role],
+    };
+
+    const query = `UPDATE users SET first_name = '${first_name}', last_name = '${last_name}', status = '${status}', roles = '${JSON.stringify(
+      insertRoles
+    )}' WHERE user_id = '${user_id}'`;
+
     const result: any = await conn.query(query);
 
     if (result) {
@@ -184,8 +261,8 @@ export async function addUser({
 
     // generate a password, an id, and a token for the new user
     const password = await generatePassword();
-    const id = uuidv4()
-    const token = generateToken(id)
+    const id = uuidv4();
+    const token = generateToken(id);
 
     const query = `INSERT INTO users (user_id, groups, first_name, last_name, email, password, status, session_id, created_at, roles, conversations, token) 
     VALUES("${id}",${null},"${fName}","${lName}","${email}","${password}","unverified",${null},"${date}",'${JSON.stringify(
@@ -344,13 +421,11 @@ async function groupByParent(
     };
     // console.log("ADDING ROOT\n");
     projects.push(root);
-  } 
+  }
 
   // find the parent
   else {
-
-    if(document.parent_id == null)
-    {
+    if (document.parent_id == null) {
       return;
     }
     // console.log(projects);
