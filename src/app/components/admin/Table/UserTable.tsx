@@ -1,68 +1,12 @@
 import React, { useState } from "react";
 import {
-  createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
-import EditableCell from "./EditUser/EditableCell";
-import EditControls from "./EditUser/EditControls";
-
-type User = {
-  first_name: string;
-  last_name: string;
-  email: string;
-  role: string;
-  status: string;
-};
-
-const columnHelper = createColumnHelper<User>();
-
-const columns = [
-  columnHelper.accessor("first_name", {
-    header: () => "First Name",
-    cell: EditableCell,
-  }),
-  columnHelper.accessor("last_name", {
-    header: () => "Last Name",
-    cell: EditableCell,
-  }),
-  columnHelper.accessor("email", {
-    header: () => "Email",
-    cell: (info) => info.getValue(),
-  }),
-  columnHelper.accessor("role", {
-    header: () => "Role",
-    cell: EditableCell,
-    meta: {
-      type: "select",
-      options: [
-        { value: "Administrator", label: "Administrator" },
-        { value: "Moderator", label: "Moderator" },
-        { value: "User", label: "User" },
-        { value: "Guest", label: "Guest" },
-      ],
-    },
-  }),
-  columnHelper.accessor("status", {
-    header: () => "Status",
-    cell: EditableCell,
-    meta: {
-      type: "action",
-      options: [
-        { value: "Active", label: "Active" },
-        { value: "Unverified", label: "Unverified" },
-        { value: "Locked", label: "Locked" },
-      ],
-    },
-  }),
-  columnHelper.display({
-    id: "edit",
-    cell: EditControls,
-  }),
-];
+import { columns } from "@/app/components/admin/Table/columns";
 
 const UserTable = () => {
   const users = [
@@ -72,6 +16,7 @@ const UserTable = () => {
       email: "jd@org.com",
       role: "User",
       status: "Locked",
+      user_id: "adsfsfdfasdf"
     },
     {
       first_name: "John",
@@ -79,6 +24,7 @@ const UserTable = () => {
       email: "js@org.com",
       role: "Moderator",
       status: "Unverified",
+      user_id: "adsfsfdfasdf"
     },
     {
       first_name: "George",
@@ -86,11 +32,14 @@ const UserTable = () => {
       email: "gm@org.com",
       role: "Guest",
       status: "Locked",
+      user_id: "adsfsfdfasdf"
     },
   ];
+
   const [data, setData] = useState(() => [...users]);
   const [originalData, setOriginalData] = useState(() => [...users]);
   const [editedRows, setEditedRows] = useState({});
+  
   const table = useReactTable({
     data: data,
     columns: columns,
@@ -117,6 +66,16 @@ const UserTable = () => {
             old.map((row, index) => (index === rowIndex ? data[rowIndex] : row))
           );
         }
+      },
+      updateRow: async (rowIndex: number) => {
+        const response = await fetch("/api/update_user", {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data[rowIndex]),
+        });
+        return response.json();
       },
       editedRows,
       setEditedRows,
