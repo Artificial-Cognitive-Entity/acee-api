@@ -19,7 +19,9 @@ const EditControls = ({ row, table }: CellProps) => {
     }));
 
     if (eleName !== "edit") {
-      meta?.revertData(row.index, e.target.name === "cancel");
+      e.currentTarget.name === "cancel"
+        ? meta?.revertData(row.index)
+        : meta?.updateRow(row.index);
     }
   };
   return meta?.editedRows[row.id] ? (

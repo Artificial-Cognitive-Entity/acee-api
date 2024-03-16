@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import UserTable from "./UserTable";
+import UserTable from "./Table/UserTable";
 import Modal from "./Options/Modal";
 import Button from "../button";
 import AddUserIcon from "./CreateUser/AddUserIcon";
