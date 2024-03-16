@@ -2,8 +2,9 @@ import { generatePassword } from "@/app/lib/generatePassword";
 import Translator, { ContentTranslator } from "../../lib/typechat/translator";
 import { format, parseISO } from "date-fns";
 import { geckoEmbedding } from "@/app/lib/models/vertexai";
+import jwt from 'jsonwebtoken';
 import mysql from "mysql2/promise";
-import { NutFill } from "@styled-icons/bootstrap";
+import { v4 as uuidv4 } from 'uuid';
 
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
@@ -81,6 +82,44 @@ export async function stopSingleStore(conn: mysql.Connection) {
   await conn.end();
 }
 
+//search for token in users table
+export async function findToken({
+  conn,
+  token,
+}: {
+  conn?: mysql.Connection;
+  token: string;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query: any = `SELECT * FROM users WHERE token = "${token}"`;
+    const result: any = await conn.query(query);
+
+    if (result) {
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
+
+// Generate JWT
+const generateToken = (id: string) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET!, {
+    expiresIn: '30d',
+  })
+}
 //search for duplicate email address in users table
 export async function findEmail({
   conn,
@@ -143,11 +182,15 @@ export async function addUser({
 
     //TODO: need to get groups from the user that is logged in
 
+    // generate a password, an id, and a token for the new user
     const password = await generatePassword();
-    const query = `INSERT INTO users (user_id, groups, first_name, last_name, email, password, status, session_id, created_at, roles, conversations) 
-    VALUES(UUID(),${null},"${fName}","${lName}","${email}","${password}","unverified",${null},"${date}",'${JSON.stringify(
+    const id = uuidv4()
+    const token = generateToken(id)
+
+    const query = `INSERT INTO users (user_id, groups, first_name, last_name, email, password, status, session_id, created_at, roles, conversations, token) 
+    VALUES("${id}",${null},"${fName}","${lName}","${email}","${password}","unverified",${null},"${date}",'${JSON.stringify(
       insertRoles
-    )}',${null})`;
+    )}',${null}, "${token}")`;
     const result = await conn.query(query);
     if (result) {
       return true;
