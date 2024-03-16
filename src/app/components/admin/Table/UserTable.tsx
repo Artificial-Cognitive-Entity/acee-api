@@ -11,35 +11,35 @@ import { columns } from "@/app/components/admin/Table/columns";
 const UserTable = () => {
   const users = [
     {
-      first_name: "Jane Doe",
-      last_name: "Doe",
-      email: "jd@org.com",
-      role: "User",
-      status: "Locked",
-      user_id: "adsfsfdfasdf"
+      first_name: "Emily",
+      last_name: "Jones",
+      email: "emily.jones@example.com",
+      role: "Guest",
+      status: "Active",
+      user_id: "1",
+    },
+    {
+      first_name: "Jane",
+      last_name: "Smith",
+      email: "jane.smith@example.com",
+      role: "Guest",
+      status: "Active",
+      user_id: "2",
     },
     {
       first_name: "John",
-      last_name: "Smith",
-      email: "js@org.com",
-      role: "Moderator",
-      status: "Unverified",
-      user_id: "adsfsfdfasdf"
-    },
-    {
-      first_name: "George",
-      last_name: "Michael",
-      email: "gm@org.com",
+      last_name: "Doe",
+      email: "john.doe@example.com",
       role: "Guest",
-      status: "Locked",
-      user_id: "adsfsfdfasdf"
+      status: "Active",
+      user_id: "1",
     },
   ];
 
   const [data, setData] = useState(() => [...users]);
   const [originalData, setOriginalData] = useState(() => [...users]);
   const [editedRows, setEditedRows] = useState({});
-  
+
   const table = useReactTable({
     data: data,
     columns: columns,
@@ -69,9 +69,9 @@ const UserTable = () => {
       },
       updateRow: async (rowIndex: number) => {
         const response = await fetch("/api/update_user", {
-          method: 'PUT',
+          method: "PUT",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(data[rowIndex]),
         });
