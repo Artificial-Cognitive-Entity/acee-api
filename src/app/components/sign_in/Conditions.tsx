@@ -1,22 +1,28 @@
 'use client'
-import React from 'react'
-import { Checkbox } from '@material-tailwind/react'
-
+import React, { useState } from 'react'
 
 const Conditions = () => {
-    return (
-        <div className="flex flex-row justify-between mb-8">
-            <label className="relative inline-flex items-center mr-3 cursor-pointer select-none">
-                <Checkbox crossOrigin color ="blue-gray" label = "Keep me logged in" id="ripple-on" ripple={true}
-                labelProps={ {className: "ml-3 text-sm font-normal text-grey-900"}}/>
-            </label>
-            <a
-                href=""
-                className="m-auto mr-4 text-sm font-medium text-purple-blue-500">
-                Forget password?
-            </a>
-        </div>
-    )
+  const [rememberMe, setRememberMe] = useState(false)
+
+  return (
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="rememberMe"
+          checked={rememberMe}
+          onChange={(e) => setRememberMe(e.target.checked)}
+          className="mr-2 focus:ring-blue-500"
+        />
+        <label htmlFor="rememberMe" className="text-sm text-gray-700">
+          Remember me
+        </label>
+      </div>
+      <a href="#" className="text-sm text-blue-600 hover:text-blue-700">
+        Forgot password?
+      </a>
+    </div>
+  )
 }
 
 export default Conditions
