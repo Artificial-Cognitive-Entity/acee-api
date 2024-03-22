@@ -3,6 +3,9 @@ import Translator, { ContentTranslator } from "../../lib/typechat/translator";
 import { format, parseISO } from "date-fns";
 import { geckoEmbedding } from "@/app/lib/models/vertexai";
 import mysql from "mysql2/promise";
+import bcrypt from "bcrypt";
+
+
 
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
@@ -14,6 +17,13 @@ interface ItemNode {
   content_type: string;
   source: string;
   last_updated: string;
+}
+
+interface User {
+  id: number;
+  email: string;
+  role: string;
+  passwordHash?: string;
 }
 
 interface JiraNode extends ItemNode {
@@ -108,6 +118,47 @@ export async function findEmail({
     if (conn) {
       await stopSingleStore(conn);
     }
+  }
+}
+
+// for user login
+export async function authenticateUser(email: string, password: string): Promise<User | null> {
+  const connection = await connectSingleStore();
+  console.log(`Attempting to authenticate user: ${email}`); // Log the attempt
+
+  try {
+    const query = "SELECT user_id, email, password AS passwordHash, roles FROM users WHERE email = ? LIMIT 1";
+    const [rows] = await connection.execute<mysql.RowDataPacket[]>(query, [email]);
+
+    if (rows.length === 0) {
+      console.log("No user found with that email."); // Log when no user is found
+      return null;
+    }
+    
+    const user = rows[0] as User; // Cast the result to your User type
+    if (!user.passwordHash) {
+      console.log("User found but no password hash present."); // Log missing password hash
+      return null;
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+    console.log(user.passwordHash);
+    console.log(`Password match result: ${passwordMatch}`); // Log the result of bcrypt.compare
+
+    if (!passwordMatch) {
+      console.log("Password does not match."); // Log failed password comparison
+      return null;
+    }
+    
+    // Passwords match, construct a new user object without the passwordHash
+    const { passwordHash, ...userWithoutHash } = user;
+    console.log("Authentication successful."); // Log successful authentication
+    return userWithoutHash; // Return the user object without the password hash
+  } catch (error) {
+    console.error("Error during user authentication:", error);
+    return null;
+  } finally {
+    await stopSingleStore(connection); // Ensure the database connection is closed
   }
 }
 
