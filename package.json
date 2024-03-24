@@ -25,7 +25,7 @@
     "generate-password-ts": "^1.6.5",
     "jsonwebtoken": "^9.0.2",
     "ldrs": "^1.0.1",
-    "mysql2": "^3.7.0",
+    "mysql2": "^3.9.2",
     "next": "^14.0.4",
     "next-auth": "^4.24.7",
     "openai": "^4.24.3",
