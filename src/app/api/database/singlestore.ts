@@ -7,8 +7,6 @@ import mysql from "mysql2/promise";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
 
-
-
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
 const USER = process.env.SINGLESTORE_USER;
