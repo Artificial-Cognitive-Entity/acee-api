@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { FaGoogleDrive, FaConfluence, FaJira } from 'react-icons/fa';
 const FeaturesPage = () => {
   return (
     <div className="bg-white">
@@ -14,24 +14,30 @@ const FeaturesPage = () => {
         </div>
 
         <div className="mt-12">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="pt-6">
-              <div className="flow-root rounded-lg bg-gray-50 px-6 pb-8">
-                <div className="-mt-6">
-                  <div>
-                    <span className="inline-flex items-center justify-center rounded-md bg-blue-600 p-3 shadow-lg">
-                      <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </span>
-                  </div>
-                  <h3 className="mt-8 text-lg font-medium tracking-tight text-gray-900">Centralized Knowledge Base</h3>
-                  <p className="mt-5 text-base text-gray-500">
-                    Consolidates data from Jira, Confluence, Google Drive, and more into a unified, searchable repository.
-                  </p>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="pt-6">
+            <div className="flow-root rounded-lg bg-gray-50 px-6 pb-8">
+              <div className="-mt-6">
+                <div className="flex justify-center space-x-4">
+                  <span className="inline-flex items-center justify-center rounded-md bg-blue-600 p-3 shadow-lg">
+                    <FaGoogleDrive className="h-6 w-6 text-white" />
+                  </span>
+                  <span className="inline-flex items-center justify-center rounded-md bg-blue-600 p-3 shadow-lg">
+                    <FaConfluence className="h-6 w-6 text-white" />
+                  </span>
+                  <span className="inline-flex items-center justify-center rounded-md bg-blue-600 p-3 shadow-lg">
+                    <FaJira className="h-6 w-6 text-white" />
+                  </span>
                 </div>
+                <h3 className="mt-8 text-lg font-medium tracking-tight text-gray-900">
+                  Centralized Knowledge Base
+                </h3>
+                <p className="mt-5 text-base text-gray-500">
+                  Consolidates data from Jira, Confluence, Google Drive, and more into a unified, searchable repository.
+                </p>
               </div>
             </div>
+          </div>
 
             <div className="pt-6">
               <div className="flow-root rounded-lg bg-gray-50 px-6 pb-8">
