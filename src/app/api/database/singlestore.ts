@@ -26,6 +26,15 @@ interface User {
   passwordHash?: string;
 }
 
+interface GroupMember {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  status: string;
+  role:string;
+}
+
 interface JiraNode extends ItemNode {
   issue_title: string;
   issue_description: string;
@@ -127,6 +136,33 @@ const generateToken = (id: string) => {
     expiresIn: "30d",
   });
 };
+
+export async function getGroup({
+  admin_id,
+  conn,
+}: {
+  admin_id: string;
+  conn?: mysql.Connection;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query: any = `SELECT groups FROM users WHERE user_id = "${admin_id}"`;
+    const result: any = await conn.query(query);
+
+    if (result) {
+      return result[0][0].groups.groups[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+}
+
 //search for duplicate email address in users table
 export async function findEmail({
   conn,
@@ -237,19 +273,25 @@ export async function updateUser({
 }
 
 // for user login
-export async function authenticateUser(email: string, password: string): Promise<User | null> {
+export async function authenticateUser(
+  email: string,
+  password: string
+): Promise<User | null> {
   const connection = await connectSingleStore();
   console.log(`Attempting to authenticate user: ${email}`); // Log the attempt
 
   try {
-    const query = "SELECT user_id, email, password AS passwordHash, roles FROM users WHERE email = ? LIMIT 1";
-    const [rows] = await connection.execute<mysql.RowDataPacket[]>(query, [email]);
+    const query =
+      "SELECT user_id, email, password AS passwordHash, roles FROM users WHERE email = ? LIMIT 1";
+    const [rows] = await connection.execute<mysql.RowDataPacket[]>(query, [
+      email,
+    ]);
 
     if (rows.length === 0) {
       console.log("No user found with that email."); // Log when no user is found
       return null;
     }
-    
+
     const user = rows[0] as User; // Cast the result to your User type
     if (!user.passwordHash) {
       console.log("User found but no password hash present."); // Log missing password hash
@@ -264,7 +306,7 @@ export async function authenticateUser(email: string, password: string): Promise
       console.log("Password does not match."); // Log failed password comparison
       return null;
     }
-    
+
     // Passwords match, construct a new user object without the passwordHash
     const { passwordHash, ...userWithoutHash } = user;
     console.log("Authentication successful."); // Log successful authentication
@@ -310,14 +352,17 @@ export async function addUser({
 
     // generate a password, an id, and a token for the new user
     const password = await generatePassword();
-    const id = uuidv4();
-    const token = generateToken(id);
+    const target_id = uuidv4();
+    const token = generateToken(target_id);
 
     const query = `INSERT INTO users (user_id, groups, first_name, last_name, email, password, status, session_id, created_at, roles, conversations, token) 
-    VALUES("${id}",${null},"${fName}","${lName}","${email}","${password}","unverified",${null},"${date}",'${JSON.stringify(
+    VALUES("${target_id}",${null},"${fName}","${lName}","${email}","${password}","unverified",${null},"${date}",'${JSON.stringify(
       insertRoles
     )}',${null}, "${token}")`;
     const result = await conn.query(query);
+
+    // await addGroupMembers({admin_id, target_id, conn})
+
     if (result) {
       return true;
     } else {
@@ -330,6 +375,87 @@ export async function addUser({
     if (conn) {
       await stopSingleStore(conn);
     }
+  }
+}
+
+export async function getGroupMembers({
+  admin_id,
+  conn,
+}: {
+  admin_id: string;
+  conn?: mysql.Connection;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    // get the group from the admin account
+    const groupName = await getGroup({ admin_id, conn });
+
+    let query = `SELECT members FROM groups WHERE group_title = '${groupName}'`;
+    let result: any = await conn.query(query);
+
+    console.log(result[0][0].members.members);
+    let members = result[0][0].members.members;
+
+    query = `SELECT user_id, first_name, last_name, email, status FROM users WHERE user_id = '${members[0]}'`;
+
+    let group: Array<GroupMember> = [];
+    for (let i = 0; i < members.length; i++) {
+      query = `SELECT user_id, first_name, last_name, email, status, roles FROM users WHERE user_id = '${members[i]}'`;
+      result = await conn.query(query);
+
+      group.push(result[0][0]);
+    }
+
+    return group
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+}
+
+export async function addGroupMember({
+  admin_id,
+  target_id,
+  conn,
+}: {
+  admin_id: string;
+  target_id: string;
+  conn?: mysql.Connection;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    // get the group from the admin account
+    const groupName = await getGroup({ admin_id, conn });
+
+    let query = `SELECT members FROM groups WHERE group_title = '${groupName}'`;
+    let result: any = await conn.query(query);
+
+    console.log(result[0][0].members.members);
+    let members = result[0][0].members.members;
+
+    // add new user to the members object
+    members.push(target_id);
+
+    const updatedMembers = {
+      members: members,
+    };
+
+    query = `UPDATE groups SET members = '${JSON.stringify(
+      updatedMembers
+    )}' WHERE group_title = '${groupName}'`;
+
+    result = await conn.query(query);
+
+    console.log(result);
+  } catch (error) {
+    console.log(error);
+    return error;
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -9,6 +9,9 @@ import {
 import { columns } from "@/app/components/admin/Table/columns";
 
 const UserTable = () => {
+  const [editedRows, setEditedRows] = useState({});
+  const [group, setGroup] = useState<any>();
+
   const users = [
     {
       first_name: "Emily",
@@ -35,10 +38,23 @@ const UserTable = () => {
       user_id: "1",
     },
   ];
-
   const [data, setData] = useState(() => [...users]);
   const [originalData, setOriginalData] = useState(() => [...users]);
-  const [editedRows, setEditedRows] = useState({});
+  // useEffect(() =>
+  // {
+  //   const groupResult = await fetch("/api/search", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+
+  //     body: JSON.stringify({
+  //       admin_id: admin_id,
+  //     }),
+  //   });
+
+  //   const response = await groupResult.json();
+  // }, [group])
 
   const table = useReactTable({
     data: data,
