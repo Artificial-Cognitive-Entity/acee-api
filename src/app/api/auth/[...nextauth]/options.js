@@ -48,7 +48,7 @@ export const options = {
     },
   },
   pages: {
-    // signIn: '/auth/signin', // Optional: specify a custom sign-in page
+    signIn: '/login', // Optional: specify a custom sign-in page
     redirect: '/dashboard', // Redirect to /dashboard after successful sign-in
   },
 };
