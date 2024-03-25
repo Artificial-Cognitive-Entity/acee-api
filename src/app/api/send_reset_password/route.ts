@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     console.log(body);
 
-    if (!body.email || !body.password || !body.token) {
+    if (!body.email || !body.token) {
         return Response.json({ error: "Email is required" }, { status: 400 });
     }
 

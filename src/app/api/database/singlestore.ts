@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import mysql from "mysql2/promise";
 import { v4 as uuidv4 } from 'uuid';
 
+
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
 const USER = process.env.SINGLESTORE_USER;
@@ -99,6 +100,81 @@ export async function findToken({
     const result: any = await conn.query(query);
 
     if (result) {
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
+
+// update password and status variable user
+export async function updateUserPasswordStatus({
+  password,
+  status,
+  token,
+  conn
+}: {
+  password: string;
+  status: string;
+  token: string;
+  conn?: mysql.Connection;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query = `UPDATE users SET password = '${password}', status = '${status}' WHERE token = '${token}'`;
+
+
+    const result: any = await conn.query(query);
+
+    if (result) {
+      console.log(result);
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
+
+// update password
+export async function updateUserPassword({
+  password,
+  token,
+  conn
+}: {
+  password: string;
+  token: string;
+  conn?: mysql.Connection;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query = `UPDATE users SET password = '${password}' WHERE token = '${token}'`;
+
+    const result: any = await conn.query(query);
+
+    if (result) {
+      console.log(result);
       return result[0];
     } else {
       return false;
