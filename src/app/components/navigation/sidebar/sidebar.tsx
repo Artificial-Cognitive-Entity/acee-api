@@ -37,7 +37,7 @@ const Sidebar = () => {
           <ModeSwap></ModeSwap>
         </li>
         <li>
-          <Button onClick={() => signOut()}>Log out</Button>
+          <button className="justify-center flex" onClick={() => signOut()}>Log out</button>
         </li>
       </ul>
     </>
