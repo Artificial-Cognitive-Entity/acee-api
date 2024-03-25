@@ -1,9 +1,12 @@
+'use client'
 import React from "react";
 import HouseIcon from "./house";
 import SearchIcon from "./search";
 import Link from "next/link";
 import RobotIcon from "../../chat/RobotIcon";
 import ModeSwap from "../../ModeSwap";
+import { signOut } from "next-auth/react"
+import Button from "../../button";
 
 const Sidebar = () => {
   return (
@@ -34,7 +37,7 @@ const Sidebar = () => {
           <ModeSwap></ModeSwap>
         </li>
         <li>
-          <Link href="/">Log out</Link>
+          <Button onClick={() => signOut()}>Log out</Button>
         </li>
       </ul>
     </>
