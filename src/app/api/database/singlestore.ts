@@ -4,8 +4,9 @@ import { format, parseISO } from "date-fns";
 import { geckoEmbedding } from "@/app/lib/models/vertexai";
 import jwt from "jsonwebtoken";
 import mysql from "mysql2/promise";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from 'uuid';
 import bcrypt from "bcrypt";
+
 
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
@@ -129,6 +130,82 @@ export async function findToken({
     }
   }
 }
+
+
+// update password and status variable user
+export async function updateUserPasswordStatus({
+  password,
+  status,
+  token,
+  conn
+}: {
+  password: string;
+  status: string;
+  token: string;
+  conn?: mysql.Connection;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query = `UPDATE users SET password = '${password}', status = '${status}' WHERE token = '${token}'`;
+
+
+    const result: any = await conn.query(query);
+
+    if (result) {
+      console.log(result);
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
+
+// update password
+export async function updateUserPassword({
+  password,
+  token,
+  conn
+}: {
+  password: string;
+  token: string;
+  conn?: mysql.Connection;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query = `UPDATE users SET password = '${password}' WHERE token = '${token}'`;
+
+    const result: any = await conn.query(query);
+
+    if (result) {
+      console.log(result);
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
 
 // Generate JWT
 const generateToken = (id: string) => {

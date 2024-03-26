@@ -10,6 +10,7 @@ const InputField = () => {
           autoFocus
           id="email"
           type="email"
+          name="email"
           placeholder="mail@yourorg.com"
           className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none mb-7 placeholder:text-grey-700 bg-grey-200 rounded-2xl"
         />
@@ -19,6 +20,7 @@ const InputField = () => {
           autoFocus
           id="password"
           type="password"
+          name="password"
           placeholder="Enter your password"
           className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none mb-7 placeholder:text-grey-700 bg-grey-200 rounded-2xl"
         />
