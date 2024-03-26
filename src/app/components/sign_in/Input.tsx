@@ -9,6 +9,7 @@ const InputField = () => {
       <input
         type="email"
         id="email"
+        name="email"
         placeholder="mail@yourorg.com"
         className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
@@ -18,6 +19,7 @@ const InputField = () => {
       <input
         type="password"
         id="password"
+        name="password"
         placeholder="Enter your password"
         className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
