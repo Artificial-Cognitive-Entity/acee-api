@@ -1,5 +1,4 @@
 import React from 'react';
-
 const TeamPage = () => {
   const teamMembers = [
     {
@@ -59,4 +58,3 @@ const TeamPage = () => {
 };
 
 export default TeamPage;
-
