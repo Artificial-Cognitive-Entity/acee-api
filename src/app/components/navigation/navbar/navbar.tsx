@@ -14,7 +14,7 @@ const Navbar = () => {
             <div className="flex justify-between h-16">
               <div className="flex">
                 <div className="flex-shrink-0 flex items-center">
-                  <Link href="/" className="font-bold text-xl text-blue-600">
+                  <Link href="/features" className="font-bold text-xl text-blue-600">
                     ACEE
                   </Link>
                 </div>
@@ -43,7 +43,7 @@ const Navbar = () => {
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:items-center">
                 <Link
-                  href="/api/auth/signin"
+                  href="/login"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Login

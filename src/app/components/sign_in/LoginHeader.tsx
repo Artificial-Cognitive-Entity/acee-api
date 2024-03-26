@@ -3,7 +3,7 @@ import React from 'react'
 const LoginHeader = () => {
     return (
         <>
-            <h3 className="mb-10 text-4xl font-extrabold text-dark-grey-900">
+            <h3 className="mb-10 text-4xl font-extrabold text-black">
                 Sign In
             </h3>
             {/* <p className="mb-4 text-grey-700">Enter your email and password</p>
