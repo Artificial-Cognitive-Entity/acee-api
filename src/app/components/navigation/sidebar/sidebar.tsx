@@ -6,7 +6,6 @@ import Link from "next/link";
 import RobotIcon from "../../chat/RobotIcon";
 import ModeSwap from "../../ModeSwap";
 import { signOut } from "next-auth/react"
-import Button from "../../button";
 
 const Sidebar = () => {
   return (
