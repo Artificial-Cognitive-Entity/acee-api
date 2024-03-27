@@ -12,7 +12,6 @@ const EditControls = ({ row, table }: CellProps) => {
 
   const setEditedRows = (e: any) => {
     const eleName = e.target.name;
-    console.log(e.target);
     meta?.setEditedRows((old: []) => ({
       ...old,
       [row.id]: !old[row.id],
