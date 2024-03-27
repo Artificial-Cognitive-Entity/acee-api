@@ -1,4 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import useSWR from "swr";
+
+// TODO: ERROR HANDLING
+// TODO: LOADING STATE
+
 import {
   flexRender,
   getCoreRowModel,
@@ -9,62 +14,21 @@ import {
 import { columns } from "@/app/components/admin/Table/columns";
 
 const UserTable = () => {
+  const { data, error } = useSWR("/api/get_group");
+
   const [editedRows, setEditedRows] = useState({});
-  const [group, setGroup] = useState<any>();
-
-  const users = [
-    {
-      first_name: "Emily",
-      last_name: "Jones",
-      email: "emily.jones@example.com",
-      role: "Guest",
-      status: "Active",
-      user_id: "1",
-    },
-    {
-      first_name: "Jane",
-      last_name: "Smith",
-      email: "jane.smith@example.com",
-      role: "Guest",
-      status: "Active",
-      user_id: "2",
-    },
-    {
-      first_name: "John",
-      last_name: "Doe",
-      email: "john.doe@example.com",
-      role: "Guest",
-      status: "Active",
-      user_id: "1",
-    },
-  ];
-  const [data, setData] = useState(() => [...users]);
-  const [originalData, setOriginalData] = useState(() => [...users]);
-  // useEffect(() =>
-  // {
-  //   const groupResult = await fetch("/api/search", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-
-  //     body: JSON.stringify({
-  //       admin_id: admin_id,
-  //     }),
-  //   });
-
-  //   const response = await groupResult.json();
-  // }, [group])
+  const [info, setInfo] = useState(() => [...data]);
+  const [originalData, setOriginalData] = useState(() => [...data]);
 
   const table = useReactTable({
-    data: data,
+    data: info,
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     meta: {
       updateData: (rowIndex: number, columnID: string, value: string) =>
         // change the target cell only
-        setData((prev) =>
+        setInfo((prev) =>
           prev.map((row, index) =>
             index === rowIndex ? { ...prev[rowIndex], [columnID]: value } : row
           )
@@ -72,7 +36,7 @@ const UserTable = () => {
       revertData: (rowIndex: number, revert: boolean) => {
         if (revert) {
           console.log("REVERTING...");
-          setData((old) =>
+          setInfo((old) =>
             old.map((row, index) =>
               index === rowIndex ? originalData[rowIndex] : row
             )
@@ -100,6 +64,8 @@ const UserTable = () => {
 
   return (
     <>
+    {/* USE DATA TO DETERMINE LOADING STATE */}
+    {/* IF LOADING ? LOADING ICON : ( IF ERROR ? <>ERROR MESSAGE<>: TABLE) */}
       <div className="overflow-y-auto rounded-md ">
         <table className="table rounded-md">
           {/* head */}
