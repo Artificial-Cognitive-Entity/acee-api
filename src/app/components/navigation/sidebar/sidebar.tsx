@@ -7,9 +7,11 @@ import RobotIcon from "../../chat/RobotIcon";
 import ModeSwap from "../../ModeSwap";
 import { signOut } from "next-auth/react";
 import type { User } from "next-auth";
+import { useRouter } from "next/navigation";
 
 const Sidebar = (user: User) => {
   const [role, setRole] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     setRole(user.role);
@@ -49,8 +51,9 @@ const Sidebar = (user: User) => {
           <button
             className="justify-center flex"
             onClick={() => {
-              console.log("SIGNING OUT");
-              signOut();
+              signOut({ redirect: false }).then(() => {
+                router.push("/"); // Redirect to the dashboard page after signing out
+            });
             }}
           >
             Log out

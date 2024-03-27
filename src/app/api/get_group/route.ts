@@ -8,12 +8,12 @@ export async function GET() {
 
     const session = await getServerSession(options)
     const admin_group: string = session!.user.group
-    
-    const group = await getGroupMembers({ admin_group });
 
+    const group = await getGroupMembers({ admin_group });
+    
     if(!group)
     {
-      return Response.json({ message: "No members in your group!" }, { status: 500 });
+      return Response.json({ message: "No members in your group!" }, { status: 404 });
     }
 
     return Response.json(group, { status: 200 });
