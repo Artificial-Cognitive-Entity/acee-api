@@ -8,16 +8,11 @@ const SearchPage = async () => {
   const session = await getServerSession(options);
 
   // redirect to login
-  if(!session)
-  {
-    redirect('/api/auth/signin?callbackUrl=/dashboard')
+  if (!session) {
+    redirect("/api/auth/signin?callbackUrl=/search");
   }
 
-  const user = session.user
-
-  return (
-    <>{session ? <Dash role={user.role} id={user.id} group={user.group} email={user.email} /> : <h1>you do not have access to this page</h1>}</>
-  );
+  return <>{session ? <Dash /> : <h1>you are not logged in!</h1>}</>;
 };
 
 export default SearchPage;
