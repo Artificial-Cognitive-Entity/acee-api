@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import UserForm from "../CreateUser/UserForm";
+import type { User } from "next-auth"; 
 interface ModalProps {
   isOpen: boolean;
   type: string;
+  user: User
 }
 
-const Modal = ({ isOpen, type }: ModalProps) => {
+const Modal = ({ isOpen, type, user }: ModalProps) => {
   const [isDone, setIsDone] = useState(false);
 
   const closeModal = (element: HTMLDialogElement) => {
@@ -56,7 +58,7 @@ const Modal = ({ isOpen, type }: ModalProps) => {
       <>
         <dialog id="createModal" className="modal self-center">
           <div className="modal-box flex justify-center rounded-lg">
-            <UserForm></UserForm>
+            <UserForm role={user.role} id={user.id} group={user.group} email={user.email}></UserForm>
           </div>
           <form method="dialog" className="modal-backdrop">
             <button>close</button>
