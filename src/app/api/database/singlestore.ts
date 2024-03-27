@@ -4,9 +4,8 @@ import { format, parseISO } from "date-fns";
 import { geckoEmbedding } from "@/app/lib/models/vertexai";
 import jwt from "jsonwebtoken";
 import mysql from "mysql2/promise";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
-
 
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
@@ -25,15 +24,16 @@ interface User {
   email: string;
   role: string;
   passwordHash?: string;
+  groups: string;
 }
 
-interface GroupMember {
+export interface GroupMember {
   user_id: string;
   first_name: string;
   last_name: string;
   email: string;
   status: string;
-  role:string;
+  role: string;
 }
 
 interface JiraNode extends ItemNode {
@@ -131,13 +131,12 @@ export async function findToken({
   }
 }
 
-
 // update password and status variable user
 export async function updateUserPasswordStatus({
   password,
   status,
   token,
-  conn
+  conn,
 }: {
   password: string;
   status: string;
@@ -150,7 +149,6 @@ export async function updateUserPasswordStatus({
     }
 
     const query = `UPDATE users SET password = '${password}', status = '${status}' WHERE token = '${token}'`;
-
 
     const result: any = await conn.query(query);
 
@@ -170,12 +168,11 @@ export async function updateUserPasswordStatus({
   }
 }
 
-
 // update password
 export async function updateUserPassword({
   password,
   token,
-  conn
+  conn,
 }: {
   password: string;
   token: string;
@@ -206,7 +203,6 @@ export async function updateUserPassword({
   }
 }
 
-
 // Generate JWT
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {
@@ -214,31 +210,6 @@ const generateToken = (id: string) => {
   });
 };
 
-export async function getGroup({
-  admin_id,
-  conn,
-}: {
-  admin_id: string;
-  conn?: mysql.Connection;
-}) {
-  try {
-    if (!conn) {
-      conn = await connectSingleStore();
-    }
-
-    const query: any = `SELECT groups FROM users WHERE user_id = "${admin_id}"`;
-    const result: any = await conn.query(query);
-
-    if (result) {
-      return result[0][0].groups.groups[0];
-    } else {
-      return false;
-    }
-  } catch (error) {
-    console.log(error);
-    return error;
-  }
-}
 
 //search for duplicate email address in users table
 export async function findEmail({
@@ -324,13 +295,7 @@ export async function updateUser({
       conn = await connectSingleStore();
     }
 
-    const insertRoles = {
-      roles: [role],
-    };
-
-    const query = `UPDATE users SET first_name = '${first_name}', last_name = '${last_name}', status = '${status}', roles = '${JSON.stringify(
-      insertRoles
-    )}' WHERE user_id = '${user_id}'`;
+    const query = `UPDATE users SET first_name = '${first_name}', last_name = '${last_name}', status = '${status}', role = '${role}' WHERE user_id = '${user_id}'`;
 
     const result: any = await conn.query(query);
 
@@ -359,7 +324,7 @@ export async function authenticateUser(
 
   try {
     const query =
-      "SELECT user_id, email, password AS passwordHash, roles FROM users WHERE email = ? LIMIT 1";
+      "SELECT user_id, email, password AS passwordHash, role, groups FROM users WHERE email = ? LIMIT 1";
     const [rows] = await connection.execute<mysql.RowDataPacket[]>(query, [
       email,
     ]);
@@ -370,6 +335,7 @@ export async function authenticateUser(
     }
 
     const user = rows[0] as User; // Cast the result to your User type
+    console.log(user);
     if (!user.passwordHash) {
       console.log("User found but no password hash present."); // Log missing password hash
       return null;
@@ -397,26 +363,26 @@ export async function authenticateUser(
 }
 
 //insert new user
-export async function addUser({
-  conn,
-  fName,
-  lName,
-  email,
-  role,
-}: {
-  conn?: mysql.Connection;
-  fName: string;
-  lName: string;
-  email: string;
-  role: string;
-}) {
+export async function addUser(
+  {
+    conn,
+    fName,
+    lName,
+    email,
+    role,
+  }: {
+    conn?: mysql.Connection;
+    fName: string;
+    lName: string;
+    email: string;
+    role: string;
+  },
+  admin: any
+) {
   try {
     if (!conn) {
       conn = await connectSingleStore();
     }
-    const insertRoles = {
-      roles: [role],
-    };
 
     // get date created in EST
     const offset = -300;
@@ -425,20 +391,19 @@ export async function addUser({
       .substring(0, 19)
       .replace("T", " ");
 
-    //TODO: need to get groups from the user that is logged in
-
     // generate a password, an id, and a token for the new user
     const password = await generatePassword();
     const target_id = uuidv4();
     const token = generateToken(target_id);
 
-    const query = `INSERT INTO users (user_id, groups, first_name, last_name, email, password, status, session_id, created_at, roles, conversations, token) 
-    VALUES("${target_id}",${null},"${fName}","${lName}","${email}","${password}","unverified",${null},"${date}",'${JSON.stringify(
-      insertRoles
-    )}',${null}, "${token}")`;
+    const query = `INSERT INTO users (user_id, groups, first_name, last_name, email, password, status, session_id, created_at, role, conversations, token) 
+    VALUES("${target_id}",'${
+      admin.group
+    }',"${fName}","${lName}","${email}","${password}","Unverified",${null},"${date}",'${role}',${null}, "${token}")`;
     const result = await conn.query(query);
 
-    // await addGroupMembers({admin_id, target_id, conn})
+    const admin_group = admin.group;
+    await addGroupMember({ admin_group, target_id, conn });
 
     if (result) {
       return true;
@@ -456,10 +421,10 @@ export async function addUser({
 }
 
 export async function getGroupMembers({
-  admin_id,
+  admin_group,
   conn,
 }: {
-  admin_id: string;
+  admin_group: string;
   conn?: mysql.Connection;
 }) {
   try {
@@ -467,26 +432,25 @@ export async function getGroupMembers({
       conn = await connectSingleStore();
     }
 
-    // get the group from the admin account
-    const groupName = await getGroup({ admin_id, conn });
-
-    let query = `SELECT members FROM groups WHERE group_title = '${groupName}'`;
+    let query = `SELECT members FROM groups WHERE group_title = '${admin_group}'`;
     let result: any = await conn.query(query);
 
-    console.log(result[0][0].members.members);
-    let members = result[0][0].members.members;
+    if(result[0].length == 0)
+    {
+      return null
+    }
 
-    query = `SELECT user_id, first_name, last_name, email, status FROM users WHERE user_id = '${members[0]}'`;
+    let members = result[0][0].members.members;
 
     let group: Array<GroupMember> = [];
     for (let i = 0; i < members.length; i++) {
-      query = `SELECT user_id, first_name, last_name, email, status, roles FROM users WHERE user_id = '${members[i]}'`;
+      query = `SELECT user_id, first_name, last_name, email, status, role FROM users WHERE user_id = '${members[i]}'`;
       result = await conn.query(query);
 
       group.push(result[0][0]);
     }
 
-    return group
+    return group;
   } catch (error) {
     console.log(error);
     return error;
@@ -494,11 +458,11 @@ export async function getGroupMembers({
 }
 
 export async function addGroupMember({
-  admin_id,
+  admin_group,
   target_id,
   conn,
 }: {
-  admin_id: string;
+  admin_group: string;
   target_id: string;
   conn?: mysql.Connection;
 }) {
@@ -507,10 +471,7 @@ export async function addGroupMember({
       conn = await connectSingleStore();
     }
 
-    // get the group from the admin account
-    const groupName = await getGroup({ admin_id, conn });
-
-    let query = `SELECT members FROM groups WHERE group_title = '${groupName}'`;
+    let query = `SELECT members FROM groups WHERE group_title = '${admin_group}'`;
     let result: any = await conn.query(query);
 
     console.log(result[0][0].members.members);
@@ -525,7 +486,7 @@ export async function addGroupMember({
 
     query = `UPDATE groups SET members = '${JSON.stringify(
       updatedMembers
-    )}' WHERE group_title = '${groupName}'`;
+    )}' WHERE group_title = '${admin_group}'`;
 
     result = await conn.query(query);
 

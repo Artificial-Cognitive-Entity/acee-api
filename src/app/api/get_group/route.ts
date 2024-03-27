@@ -1,15 +1,20 @@
-import { NextResponse } from "next/server";
-import { addUser, findEmail, getGroupMembers } from "../database/singlestore";
+import {getGroupMembers } from "../database/singlestore";
+import { getServerSession } from "next-auth";
+import { options } from "../auth/[...nextauth]/options";
+import type { GroupMember } from "../database/singlestore";
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    // TODO: GET LOGGED IN USER'S CREDS
 
-    const body = await req.json()
-    const admin_id = body.admin_id
+    const session = await getServerSession(options)
+    const admin_group: string = session!.user.group
     
-    const group = await getGroupMembers({ admin_id });
-    console.log(group);
+    const group = await getGroupMembers({ admin_group });
+
+    if(!group)
+    {
+      return Response.json({ message: "No members in your group!" }, { status: 500 });
+    }
 
     return Response.json(group, { status: 200 });
   } catch (error) {
