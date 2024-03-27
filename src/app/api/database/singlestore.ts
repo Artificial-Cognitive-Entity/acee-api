@@ -2,12 +2,10 @@ import { generatePassword } from "@/app/lib/generatePassword";
 import Translator, { ContentTranslator } from "../../lib/typechat/translator";
 import { format, parseISO } from "date-fns";
 import { geckoEmbedding } from "@/app/lib/models/vertexai";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import mysql from "mysql2/promise";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
-
-
 
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
@@ -26,6 +24,16 @@ interface User {
   email: string;
   role: string;
   passwordHash?: string;
+  groups: string;
+}
+
+export interface GroupMember {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  status: string;
+  role: string;
 }
 
 interface JiraNode extends ItemNode {
@@ -123,13 +131,12 @@ export async function findToken({
   }
 }
 
-
 // update password and status variable user
 export async function updateUserPasswordStatus({
   password,
   status,
   token,
-  conn
+  conn,
 }: {
   password: string;
   status: string;
@@ -142,7 +149,6 @@ export async function updateUserPasswordStatus({
     }
 
     const query = `UPDATE users SET password = '${password}', status = '${status}' WHERE token = '${token}'`;
-
 
     const result: any = await conn.query(query);
 
@@ -162,12 +168,11 @@ export async function updateUserPasswordStatus({
   }
 }
 
-
 // update password
 export async function updateUserPassword({
   password,
   token,
-  conn
+  conn,
 }: {
   password: string;
   token: string;
@@ -198,13 +203,14 @@ export async function updateUserPassword({
   }
 }
 
-
 // Generate JWT
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {
-    expiresIn: '30d',
-  })
-}
+    expiresIn: "30d",
+  });
+};
+
+
 //search for duplicate email address in users table
 export async function findEmail({
   conn,
@@ -236,21 +242,100 @@ export async function findEmail({
   }
 }
 
+//  delete user
+export async function deleteUser({
+  conn,
+  user_id,
+}: {
+  conn?: mysql.Connection;
+  user_id: string;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query = `DELETE FROM users WHERE user_id =${user_id}`;
+
+    const result: any = await conn.query(query);
+
+    if (result) {
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
+// update user
+export async function updateUser({
+  conn,
+  first_name,
+  last_name,
+  role,
+  user_id,
+  status,
+}: {
+  conn?: mysql.Connection;
+  first_name: string;
+  last_name: string;
+  role: string;
+  user_id: string;
+  status: string;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    const query = `UPDATE users SET first_name = '${first_name}', last_name = '${last_name}', status = '${status}', role = '${role}' WHERE user_id = '${user_id}'`;
+
+    const result: any = await conn.query(query);
+
+    if (result) {
+      return result[0];
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  } finally {
+    if (conn) {
+      await stopSingleStore(conn);
+    }
+  }
+}
+
 // for user login
-export async function authenticateUser(email: string, password: string): Promise<User | null> {
+export async function authenticateUser(
+  email: string,
+  password: string
+): Promise<User | null> {
   const connection = await connectSingleStore();
   console.log(`Attempting to authenticate user: ${email}`); // Log the attempt
 
   try {
-    const query = "SELECT user_id, email, password AS passwordHash, roles FROM users WHERE email = ? LIMIT 1";
-    const [rows] = await connection.execute<mysql.RowDataPacket[]>(query, [email]);
+    const query =
+      "SELECT user_id, email, password AS passwordHash, role, groups FROM users WHERE email = ? LIMIT 1";
+    const [rows] = await connection.execute<mysql.RowDataPacket[]>(query, [
+      email,
+    ]);
 
     if (rows.length === 0) {
       console.log("No user found with that email."); // Log when no user is found
       return null;
     }
-    
+
     const user = rows[0] as User; // Cast the result to your User type
+    console.log(user);
     if (!user.passwordHash) {
       console.log("User found but no password hash present."); // Log missing password hash
       return null;
@@ -264,7 +349,7 @@ export async function authenticateUser(email: string, password: string): Promise
       console.log("Password does not match."); // Log failed password comparison
       return null;
     }
-    
+
     // Passwords match, construct a new user object without the passwordHash
     const { passwordHash, ...userWithoutHash } = user;
     console.log("Authentication successful."); // Log successful authentication
@@ -278,26 +363,26 @@ export async function authenticateUser(email: string, password: string): Promise
 }
 
 //insert new user
-export async function addUser({
-  conn,
-  fName,
-  lName,
-  email,
-  role,
-}: {
-  conn?: mysql.Connection;
-  fName: string;
-  lName: string;
-  email: string;
-  role: string;
-}) {
+export async function addUser(
+  {
+    conn,
+    fName,
+    lName,
+    email,
+    role,
+  }: {
+    conn?: mysql.Connection;
+    fName: string;
+    lName: string;
+    email: string;
+    role: string;
+  },
+  admin: any
+) {
   try {
     if (!conn) {
       conn = await connectSingleStore();
     }
-    const insertRoles = {
-      roles: [role],
-    };
 
     // get date created in EST
     const offset = -300;
@@ -306,18 +391,20 @@ export async function addUser({
       .substring(0, 19)
       .replace("T", " ");
 
-    //TODO: need to get groups from the user that is logged in
-
     // generate a password, an id, and a token for the new user
     const password = await generatePassword();
-    const id = uuidv4()
-    const token = generateToken(id)
+    const target_id = uuidv4();
+    const token = generateToken(target_id);
 
-    const query = `INSERT INTO users (user_id, groups, first_name, last_name, email, password, status, session_id, created_at, roles, conversations, token) 
-    VALUES("${id}",${null},"${fName}","${lName}","${email}","${password}","unverified",${null},"${date}",'${JSON.stringify(
-      insertRoles
-    )}',${null}, "${token}")`;
+    const query = `INSERT INTO users (user_id, groups, first_name, last_name, email, password, status, session_id, created_at, role, conversations, token) 
+    VALUES("${target_id}",'${
+      admin.group
+    }',"${fName}","${lName}","${email}","${password}","Unverified",${null},"${date}",'${role}',${null}, "${token}")`;
     const result = await conn.query(query);
+
+    const admin_group = admin.group;
+    await addGroupMember({ admin_group, target_id, conn });
+
     if (result) {
       return true;
     } else {
@@ -330,6 +417,83 @@ export async function addUser({
     if (conn) {
       await stopSingleStore(conn);
     }
+  }
+}
+
+export async function getGroupMembers({
+  admin_group,
+  conn,
+}: {
+  admin_group: string;
+  conn?: mysql.Connection;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    let query = `SELECT members FROM groups WHERE group_title = '${admin_group}'`;
+    let result: any = await conn.query(query);
+
+    if(result[0].length == 0)
+    {
+      return null
+    }
+
+    let members = result[0][0].members.members;
+
+    let group: Array<GroupMember> = [];
+    for (let i = 0; i < members.length; i++) {
+      query = `SELECT user_id, first_name, last_name, email, status, role FROM users WHERE user_id = '${members[i]}'`;
+      result = await conn.query(query);
+
+      group.push(result[0][0]);
+    }
+
+    return group;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+}
+
+export async function addGroupMember({
+  admin_group,
+  target_id,
+  conn,
+}: {
+  admin_group: string;
+  target_id: string;
+  conn?: mysql.Connection;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    let query = `SELECT members FROM groups WHERE group_title = '${admin_group}'`;
+    let result: any = await conn.query(query);
+
+    console.log(result[0][0].members.members);
+    let members = result[0][0].members.members;
+
+    // add new user to the members object
+    members.push(target_id);
+
+    const updatedMembers = {
+      members: members,
+    };
+
+    query = `UPDATE groups SET members = '${JSON.stringify(
+      updatedMembers
+    )}' WHERE group_title = '${admin_group}'`;
+
+    result = await conn.query(query);
+
+    console.log(result);
+  } catch (error) {
+    console.log(error);
+    return error;
   }
 }
 
@@ -354,7 +518,7 @@ export async function findRelevantDocs({
     const embedQuery =
       "SELECT content_id, DOT_PRODUCT_F64(JSON_ARRAY_PACK_F64('[" +
       embedding +
-      "]'), embedding) AS score FROM embeddings ORDER BY score DESC LIMIT 3";
+      "]'), embedding) AS score FROM embeddings ORDER BY score DESC";
 
     const res: Array<ID> = await getIDs(conn, embedQuery, "chat");
     let array: Array<any> = [];
@@ -367,7 +531,7 @@ export async function findRelevantDocs({
     return array;
   } catch (error) {
     console.log(error);
-    return error;
+    return null;
     //!IMPORTANT! end connection after each query
   } finally {
     if (conn) {
@@ -470,13 +634,11 @@ async function groupByParent(
     };
     // console.log("ADDING ROOT\n");
     projects.push(root);
-  } 
+  }
 
   // find the parent
   else {
-
-    if(document.parent_id == null)
-    {
+    if (document.parent_id == null) {
       return;
     }
     // console.log(projects);

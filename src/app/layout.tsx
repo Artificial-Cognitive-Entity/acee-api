@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navigation/navbar/navbar";
+import AuthProvider from "./context/AuthProvider";
 
 // main root of the application
 
@@ -21,8 +22,10 @@ export default function RootLayout({
   return (
     <html data-theme="black" lang="en">
       <body className={inter.className}>
-        <Navbar />
-        {children}
+        <AuthProvider>
+          <Navbar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

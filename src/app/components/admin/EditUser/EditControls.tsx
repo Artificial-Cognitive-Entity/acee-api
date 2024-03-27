@@ -12,14 +12,15 @@ const EditControls = ({ row, table }: CellProps) => {
 
   const setEditedRows = (e: any) => {
     const eleName = e.target.name;
-    console.log(e.target);
     meta?.setEditedRows((old: []) => ({
       ...old,
       [row.id]: !old[row.id],
     }));
 
     if (eleName !== "edit") {
-      meta?.revertData(row.index, e.target.name === "cancel");
+      e.currentTarget.name === "cancel"
+        ? meta?.revertData(row.index)
+        : meta?.updateRow(row.index);
     }
   };
   return meta?.editedRows[row.id] ? (

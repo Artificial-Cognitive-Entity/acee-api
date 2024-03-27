@@ -1,14 +1,19 @@
-'use client'
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import HouseIcon from "./house";
 import SearchIcon from "./search";
 import Link from "next/link";
 import RobotIcon from "../../chat/RobotIcon";
 import ModeSwap from "../../ModeSwap";
-import { signOut } from "next-auth/react"
-import Button from "../../button";
+import { signOut } from "next-auth/react";
+import type { User } from "next-auth";
 
-const Sidebar = () => {
+const Sidebar = (user: User) => {
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    setRole(user.role);
+  }, [user]);
   return (
     <>
       <label
@@ -18,11 +23,15 @@ const Sidebar = () => {
       ></label>
       <ul className="menu p-4 w-45 h-full bg-base-300 text-base-content justify-around ">
         {/* Sidebar content here */}
-        <li>
-          <Link href="/dashboard" className="justify-center flex">
-            <HouseIcon></HouseIcon>
-          </Link>
-        </li>
+
+        {role == "Administrator" && (
+          <li>
+            <Link href="/dashboard" className="justify-center flex">
+              <HouseIcon></HouseIcon>
+            </Link>
+          </li>
+        )}
+
         <li>
           <Link href="/search" className="justify-center flex">
             <SearchIcon />
@@ -37,7 +46,15 @@ const Sidebar = () => {
           <ModeSwap></ModeSwap>
         </li>
         <li>
-          <button className="justify-center flex" onClick={() => signOut()}>Log out</button>
+          <button
+            className="justify-center flex"
+            onClick={() => {
+              console.log("SIGNING OUT");
+              signOut();
+            }}
+          >
+            Log out
+          </button>
         </li>
       </ul>
     </>
