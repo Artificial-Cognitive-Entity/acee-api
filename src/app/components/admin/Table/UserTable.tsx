@@ -1,105 +1,34 @@
 import React, { useState } from "react";
+import useSWR from "swr";
+
+// TODO: ERROR HANDLING
+// TODO: LOADING STATE
+
 import {
-  createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
-import EditableCell from "./EditUser/EditableCell";
-import EditControls from "./EditUser/EditControls";
-
-type User = {
-  first_name: string;
-  last_name: string;
-  email: string;
-  role: string;
-  status: string;
-};
-
-const columnHelper = createColumnHelper<User>();
-
-const columns = [
-  columnHelper.accessor("first_name", {
-    header: () => "First Name",
-    cell: EditableCell,
-  }),
-  columnHelper.accessor("last_name", {
-    header: () => "Last Name",
-    cell: EditableCell,
-  }),
-  columnHelper.accessor("email", {
-    header: () => "Email",
-    cell: (info) => info.getValue(),
-  }),
-  columnHelper.accessor("role", {
-    header: () => "Role",
-    cell: EditableCell,
-    meta: {
-      type: "select",
-      options: [
-        { value: "Administrator", label: "Administrator" },
-        { value: "Moderator", label: "Moderator" },
-        { value: "User", label: "User" },
-        { value: "Guest", label: "Guest" },
-      ],
-    },
-  }),
-  columnHelper.accessor("status", {
-    header: () => "Status",
-    cell: EditableCell,
-    meta: {
-      type: "action",
-      options: [
-        { value: "Active", label: "Active" },
-        { value: "Unverified", label: "Unverified" },
-        { value: "Locked", label: "Locked" },
-      ],
-    },
-  }),
-  columnHelper.display({
-    id: "edit",
-    cell: EditControls,
-  }),
-];
+import { columns } from "@/app/components/admin/Table/columns";
 
 const UserTable = () => {
-  const users = [
-    {
-      first_name: "Jane Doe",
-      last_name: "Doe",
-      email: "jd@org.com",
-      role: "User",
-      status: "Locked",
-    },
-    {
-      first_name: "John",
-      last_name: "Smith",
-      email: "js@org.com",
-      role: "Moderator",
-      status: "Unverified",
-    },
-    {
-      first_name: "George",
-      last_name: "Michael",
-      email: "gm@org.com",
-      role: "Guest",
-      status: "Locked",
-    },
-  ];
-  const [data, setData] = useState(() => [...users]);
-  const [originalData, setOriginalData] = useState(() => [...users]);
+  const { data, error } = useSWR("/api/get_group");
+
   const [editedRows, setEditedRows] = useState({});
+  const [info, setInfo] = useState(() => [...data]);
+  const [originalData, setOriginalData] = useState(() => [...data]);
+
   const table = useReactTable({
-    data: data,
+    data: info,
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     meta: {
       updateData: (rowIndex: number, columnID: string, value: string) =>
         // change the target cell only
-        setData((prev) =>
+        setInfo((prev) =>
           prev.map((row, index) =>
             index === rowIndex ? { ...prev[rowIndex], [columnID]: value } : row
           )
@@ -107,7 +36,7 @@ const UserTable = () => {
       revertData: (rowIndex: number, revert: boolean) => {
         if (revert) {
           console.log("REVERTING...");
-          setData((old) =>
+          setInfo((old) =>
             old.map((row, index) =>
               index === rowIndex ? originalData[rowIndex] : row
             )
@@ -118,6 +47,16 @@ const UserTable = () => {
           );
         }
       },
+      updateRow: async (rowIndex: number) => {
+        const response = await fetch("/api/update_user", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data[rowIndex]),
+        });
+        return response.json();
+      },
       editedRows,
       setEditedRows,
     },
@@ -125,6 +64,8 @@ const UserTable = () => {
 
   return (
     <>
+    {/* USE DATA TO DETERMINE LOADING STATE */}
+    {/* IF LOADING ? LOADING ICON : ( IF ERROR ? <>ERROR MESSAGE<>: TABLE) */}
       <div className="overflow-y-auto rounded-md ">
         <table className="table rounded-md">
           {/* head */}

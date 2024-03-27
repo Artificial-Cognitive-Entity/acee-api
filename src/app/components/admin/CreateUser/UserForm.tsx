@@ -5,12 +5,9 @@ import Success from "./Alerts";
 import { Error } from "./Alerts";
 import { Warning } from "./Alerts";
 import { Transition } from "@headlessui/react";
+import type { User } from "next-auth";
 
-interface FunctionArgs {
-  callBackStatus: (status: string) => void;
-}
-
-const UserForm = () => {
+const UserForm = (user: User) => {
   const [formData, setFormData] = useState<any>({
     fName: "",
     lName: "",
@@ -20,7 +17,7 @@ const UserForm = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [success, setSuccess] = useState("");
   const [message, setMessage] = useState("");
-  
+
   const displayStatus = (mess: string, status: number) => {
     if (status == 200) {
       setSuccess("success");
@@ -44,13 +41,14 @@ const UserForm = () => {
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setErrorMessage("");
+    const admin = user
 
     const res = await fetch("/api/create_user", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ formData }),
+      body: JSON.stringify({ formData, admin }),
     });
 
     if (res.status == 500) {
@@ -77,76 +75,75 @@ const UserForm = () => {
   };
   return (
     <>
-   
-        <div className=" flex flex-col items-center w-full gap-4">
-          <h1 className="font-bold text-2xl">Create a New User</h1>
+      <div className=" flex flex-col items-center w-full gap-4">
+        <h1 className="font-bold text-2xl">Create a New User</h1>
 
-          <form
-            onSubmit={handleSubmit}
-            method="post"
-            className="flex flex-col gap-1 w-1/2"
-          >
-            <label>
-              First Name
-              <input
-                id="fName"
-                name="fName"
-                type="text"
-                onChange={handleChange}
-                required
-                value={formData.fName}
-                className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none placeholder:text-grey-700 bg-grey-200 rounded-2xl"
-              />
-            </label>
-            <label>Last Name</label>
+        <form
+          onSubmit={handleSubmit}
+          method="post"
+          className="flex flex-col gap-1 w-1/2"
+        >
+          <label>
+            First Name
             <input
-              id="lName"
-              name="lName"
+              id="fName"
+              name="fName"
               type="text"
               onChange={handleChange}
               required
-              value={formData.lName}
+              value={formData.fName}
               className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none placeholder:text-grey-700 bg-grey-200 rounded-2xl"
             />
-            <label>Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              onChange={handleChange}
-              required
-              value={formData.email}
-              className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none placeholder:text-grey-700 bg-grey-200 rounded-2xl"
-            />
+          </label>
+          <label>Last Name</label>
+          <input
+            id="lName"
+            name="lName"
+            type="text"
+            onChange={handleChange}
+            required
+            value={formData.lName}
+            className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none placeholder:text-grey-700 bg-grey-200 rounded-2xl"
+          />
+          <label>Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            onChange={handleChange}
+            required
+            value={formData.email}
+            className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none placeholder:text-grey-700 bg-grey-200 rounded-2xl"
+          />
 
-            <label>Role</label>
-            <select
-              id="role"
-              name="role"
-              onChange={handleChange}
-              required
-              value={formData.role}
-              className="select select-bordered select-accent max-w-xs leading-4 flex items-center w-full px-5 py-4 mr-2 mb-4 text-sm font-medium outline-none rounded-2xl"
-            >
-              <option value="none" defaultValue="none" hidden>
-                Select a Role
-              </option>
-              <option value="user">User</option>
-              <option value="admin">Administrator</option>
-              <option value="admin">Moderator</option>
-              <option value="guest">Guest</option>
-            </select>
+          <label>Role</label>
+          <select
+            id="role"
+            name="role"
+            onChange={handleChange}
+            required
+            value={formData.role}
+            className="select select-bordered select-accent max-w-xs leading-4 flex items-center w-full px-5 py-4 mr-2 mb-4 text-sm font-medium outline-none rounded-2xl"
+          >
+            <option value="none" defaultValue="none" hidden>
+              Select a Role
+            </option>
+            <option value="user">User</option>
+            <option value="admin">Administrator</option>
+            <option value="admin">Moderator</option>
+            <option value="guest">Guest</option>
+          </select>
 
-            <Button type="submit" className=" btn-accent rounded-md">
-              Create User
-            </Button>
-          </form>
-          <div className="w-full">
-            {success == "success" && <Success>{message}</Success>}
-            {success == "fail" && <Warning>{message}</Warning>}
-            {errorMessage != "" && <Error>{errorMessage}</Error>}
-          </div>
+          <Button type="submit" className=" btn-accent rounded-md">
+            Create User
+          </Button>
+        </form>
+        <div className="w-full">
+          {success == "success" && <Success>{message}</Success>}
+          {success == "fail" && <Warning>{message}</Warning>}
+          {errorMessage != "" && <Error>{errorMessage}</Error>}
         </div>
+      </div>
     </>
   );
 };

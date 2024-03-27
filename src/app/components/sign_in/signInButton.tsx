@@ -1,13 +1,11 @@
-import React from "react";
+import React from 'react'
 
-const signInButton = () => {
+const SignInButton = () => {
   return (
-    <button className="btn btn-accent rounded-md">
-      <span className="relative px-5 py-2.5 transition-all ease-in duration-75 dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-        Sign in
-      </span>
+    <button className="w-full py-2 mb-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      Sign In
     </button>
-  );
-};
+  )
+}
 
-export default signInButton;
+export default SignInButton

@@ -47,7 +47,7 @@ const EditableCell = ({ getValue, row, column, table }: CellProp) => {
       </select>
     ) : columnMeta?.type === "action" ? (
       <>
-        {value == "Active" ? (
+        {value == "active" ? (
           <div>{value}</div>
         ) : (
           <div className="border-red-500 border-2 rounded-lg">

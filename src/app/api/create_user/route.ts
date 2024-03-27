@@ -6,6 +6,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const userData = body.formData;
+    const admin = body.admin
 
     if (!userData.email || !userData.fName || !userData.lName || !userData.role) {
       return Response.json(
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
       // no users with that email address was found
       if(isFound.length == 0)
       {
-        await addUser(userData);
+        await addUser(userData, admin);
         return Response.json({ message: "User created!" }, { status: 200 });
       }
 

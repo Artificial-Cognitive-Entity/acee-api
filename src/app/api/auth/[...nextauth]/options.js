@@ -8,7 +8,7 @@ export const options = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         // Check for credentials presence
@@ -18,13 +18,21 @@ export const options = {
 
         // Use the authenticateUser function to verify the user's credentials.
         // This function now handles password hashing comparison using bcrypt.
-        const user = await authenticateUser(credentials.email, credentials.password);
+        const user = await authenticateUser(
+          credentials.email,
+          credentials.password
+        );
 
         if (user) {
           console.log("Authentication successful");
           // Return the user object without the password for NextAuth to use
           // Note: The user object returned from authenticateUser should already exclude the passwordHash
-          return { id: user.id, email: user.email, role: user.role };
+          return {
+            id: user.user_id,
+            email: user.email,
+            role: user.role,
+            groups: user.groups,
+          };
         } else {
           console.log("Authentication failed");
           return null;
@@ -35,11 +43,21 @@ export const options = {
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.role = user.role;
+      if (user) {
+        token.role = user.role;
+        token.email = user.email;
+        token.id = user.id;
+        token.group = user.group;
+      }
       return token;
     },
     async session({ session, token }) {
-      if (session?.user) session.user.role = token.role;
+      if (session?.user) {
+        session.user.role = token.role;
+        session.user.email = token.email;
+        session.user.id = token.id;
+        session.user.group = token.group;
+      }
       return session;
     },
     async redirect({ baseUrl }) {
@@ -47,8 +65,11 @@ export const options = {
       return `${baseUrl}/dashboard`;
     },
   },
+
+  //TODO: ADD ERROR PAGE
   pages: {
-    // signIn: '/auth/signin', // Optional: specify a custom sign-in page
-    redirect: '/dashboard', // Redirect to /dashboard after successful sign-in
+    signIn: "/login", // Optional: specify a custom sign-in page
+    signOut: "/",
+    redirect: "/dashboard", // Redirect to /dashboard after successful sign-in
   },
 };

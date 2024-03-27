@@ -1,4 +1,3 @@
-"use client";
 // TODO: FORMAT SEARCH RESULTS SO IT LOOKS PRETTY
 // TODO: RIGHT CLICK SEARCH RESULT -> CHATBOT QUERY
 import React, { useEffect, useState } from "react";

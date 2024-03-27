@@ -30,19 +30,16 @@ export async function POST(req: Request) {
     );
 
     // NEED TO GET USER'S ID FOR SPECIFIC CONVO HISTORY
+
     let relevantDocs: any = await findRelevantDocs({ embedding });
-
-    relevantDocs = removeIDs(relevantDocs);
-
     let systemMessage: ChatCompletionMessage;
 
-    let parsed_docs = JSON.stringify(relevantDocs, null, 3).replace(
-      /[\[\]{}]/g,
-      ""
-    );
-    console.log(parsed_docs);
-
     if (relevantDocs) {
+      relevantDocs = removeIDs(relevantDocs);
+      let parsed_docs = JSON.stringify(relevantDocs, null, 3).replace(
+        /[\[\]{}]/g,
+        ""
+      );
       systemMessage = {
         role: "assistant",
         content: `You are an AI assistant named ACEE (Artificial Cognitive Entity for Enterprise). Your task is to aid employees in finding relevant documentation pertaining to the company. 
@@ -53,7 +50,6 @@ export async function POST(req: Request) {
       
         The time in the last updated field is in 24 hour time. Convert it to the AM/PM format. Do not include the seconds.
         Do not display links in the [linkTitle](linkUrl) format. Display the url in plaintext.
-
         `,
       };
     } else {

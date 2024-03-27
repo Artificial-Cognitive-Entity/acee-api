@@ -1,4 +1,3 @@
-"use client";
 import { cn } from "@/app/lib/utils";
 import { useChat } from "ai/react";
 import TextareaAutosize from "react-textarea-autosize";
