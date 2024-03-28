@@ -1,11 +1,12 @@
 import React from 'react';
+import dogImage from './images/dog-testing.png';
 const TeamPage = () => {
   const teamMembers = [
     {
       name: 'Nicholas Procaccio',
       role: 'Project Manager',
       bio: 'As the Project Manager, Nicholas is responsible for overseeing the entire ACEE project, ensuring tasks are completed on schedule. His key contributions include managing the transformation workflow, developing the logic for concurrent data updates, and handling the normalization of data schemas during extraction. Additionally, Nicholas is involved in the extraction process, focusing on loading the extracted data into the database.',
-      image: '/path/to/john-doe.jpg',
+      image: '/path/to/jane-smith.jpg',
     },
     {
       name: 'Joshua Abrams',
@@ -34,21 +35,24 @@ const TeamPage = () => {
   ];
 
   return (
-    <div className="bg-white py-24 sm:py-32">
+    <div className="bg-black py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:mx-0">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Our Team</h2>
-          <p className="mt-6 text-lg leading-8 text-gray-600">
+          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Our Team</h2>
+          <p className="mt-6 text-lg leading-8 text-white">
             We are a dynamic group of individuals working together to achieve excellence.
           </p>
         </div>
         <ul className="mx-auto mt-20 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3">
           {teamMembers.map((member) => (
-            <li key={member.name}>
-              <img className="aspect-[3/2] w-full rounded-2xl object-cover" src={member.image} alt={member.name} />
-              <h3 className="mt-6 text-lg font-semibold leading-8 tracking-tight text-gray-900">{member.name}</h3>
-              <p className="text-base leading-7 text-gray-600">{member.role}</p>
-              <p className="mt-4 text-base leading-7 text-gray-600">{member.bio}</p>
+            <li key={member.name} className="rounded-lg bg-purple-900 p-6">
+              {/* // eslint-disable-next-line @next/next/no-img-element */}
+              <img className="aspect-[3/2] w-full rounded-lg object-cover" src={member.image} alt={member.name} />
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold leading-8 tracking-tight text-white">{member.name}</h3>
+                <p className="text-base leading-7 text-white">{member.role}</p>
+                <p className="mt-4 text-base leading-7 text-white">{member.bio}</p>
+              </div>
             </li>
           ))}
         </ul>
