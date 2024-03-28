@@ -31,7 +31,7 @@ export const options = {
             id: user.user_id,
             email: user.email,
             role: user.role,
-            group: user.groups,
+            groups: user.groups,
           };
         } else {
           console.log("Authentication failed");
@@ -69,6 +69,7 @@ export const options = {
   //TODO: ADD ERROR PAGE
   pages: {
     signIn: "/login", // Optional: specify a custom sign-in page
+    signOut: "/",
     redirect: "/dashboard", // Redirect to /dashboard after successful sign-in
   },
 };

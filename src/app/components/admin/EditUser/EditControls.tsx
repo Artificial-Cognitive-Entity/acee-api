@@ -23,11 +23,6 @@ const EditControls = ({ row, table }: CellProps) => {
         : meta?.updateRow(row.index);
     }
   };
-
-  const removeRow = () => {
-    meta?.removeRow(row.index);
-  };
-  
   return meta?.editedRows[row.id] ? (
     <div className="flex justify-center gap-3">
       <Button
@@ -38,11 +33,8 @@ const EditControls = ({ row, table }: CellProps) => {
       >
         X
       </Button>
-      <Button className="text-purple-900" name="done" onClick={setEditedRows}>
+      <Button className="text-green-900" name="done" onClick={setEditedRows}>
         ✔
-      </Button>
-      <Button className="text-red-900" name="delete" onClick={removeRow}>
-        delete
       </Button>
     </div>
   ) : (

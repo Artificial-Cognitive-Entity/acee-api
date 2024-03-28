@@ -7,12 +7,9 @@ import RobotIcon from "../../chat/RobotIcon";
 import ModeSwap from "../../ModeSwap";
 import { signOut } from "next-auth/react";
 import type { User } from "next-auth";
-import { useRouter } from "next/navigation";
-import { FaUserGroup } from "react-icons/fa6";
 
 const Sidebar = (user: User) => {
-  const [role, setRole] = useState(user.role);
-  const router = useRouter();
+  const [role, setRole] = useState("");
 
   useEffect(() => {
     setRole(user.role);
@@ -30,7 +27,7 @@ const Sidebar = (user: User) => {
         {role == "Administrator" && (
           <li>
             <Link href="/dashboard" className="justify-center flex">
-              <FaUserGroup className="grow-0 shrink-0 basis-auto w-8 h-8" />
+              <HouseIcon></HouseIcon>
             </Link>
           </li>
         )}
@@ -46,15 +43,14 @@ const Sidebar = (user: User) => {
           </Link>
         </li>
         <li>
-          <ModeSwap/>
+          <ModeSwap></ModeSwap>
         </li>
         <li>
           <button
             className="justify-center flex"
             onClick={() => {
-              signOut({ redirect: false }).then(() => {
-                router.push("/"); // Redirect to the dashboard page after signing out
-              });
+              console.log("SIGNING OUT");
+              signOut();
             }}
           >
             Log out

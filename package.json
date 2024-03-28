@@ -15,7 +15,6 @@
     "@styled-icons/bootstrap": "^10.47.0",
     "@styled-icons/entypo": "^10.46.0",
     "@styled-icons/simple-icons": "^10.46.0",
-    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/forms": "^0.5.7",
     "@tanstack/react-table": "^8.13.2",
     "@types/generate-password": "^1.5.1",

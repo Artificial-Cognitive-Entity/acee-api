@@ -12,11 +12,7 @@ export async function POST(req: Request) {
     //const userData = body.formData;
     console.log(body);
 
-    const url = new URL(req.url);
-    const token = url.searchParams.get('token');
-    console.log(token);
-
-    if (!body.password || !token) {
+    if (!body.email || !body.password || !body.token) {
         //res.status(400).json({ error: 'Email is required' });
         return Response.json(
             {error: "Password and token are required"},
@@ -28,7 +24,7 @@ export async function POST(req: Request) {
 
         // Step 1: Validate verificationToken and find the user.
 
-        const user = await findToken({ token: token });
+        const user = await findToken({ token: body.token });
 
 
         if (!user) {
@@ -45,7 +41,7 @@ export async function POST(req: Request) {
             const updateData = {
                 password: hashedPassword, // The new hashed password
                 status: 'active', // Assuming you want to set the user status to active
-                token: token, // The token used for verification
+                token: body.token, // The token used for verification
             };
 
             await updateUserPasswordStatus(updateData);

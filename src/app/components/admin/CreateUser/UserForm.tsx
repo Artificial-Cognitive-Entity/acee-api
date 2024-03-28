@@ -128,10 +128,10 @@ const UserForm = (user: User) => {
             <option value="none" defaultValue="none" hidden>
               Select a Role
             </option>
-            <option value="User">User</option>
-            <option value="Administrator">Administrator</option>
-            <option value="Moderator">Moderator</option>
-            <option value="Guest">Guest</option>
+            <option value="user">User</option>
+            <option value="admin">Administrator</option>
+            <option value="admin">Moderator</option>
+            <option value="guest">Guest</option>
           </select>
 
           <Button type="submit" className=" btn-accent rounded-md">
