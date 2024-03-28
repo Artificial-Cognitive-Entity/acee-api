@@ -1,27 +1,29 @@
 "use client";
 import React from "react";
 
-const InputField = () => {
+const InputField: React.FC = () => {
   return (
     <>
-      <div>
-
-        <label className="flex" htmlFor="password">Password*</label>
+      <div className="mb-4">
+        <label htmlFor="password" className="block text-white font-medium mb-2 text-center">
+          Password
+        </label>
         <input
           autoFocus
           id="password"
           type="password"
           placeholder="Enter your password"
-          className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none mb-7 placeholder:text-grey-700 bg-grey-200 rounded-2xl"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-black text-white"
         />
 
-<label className="flex" htmlFor="password">Retype Password*</label>
+        <label htmlFor="retype-password" className="block text-white font-medium mb-2 mt-4 text-center">
+          Retype Password
+        </label>
         <input
-          autoFocus
-          id="password"
+          id="retype-password"
           type="password"
           placeholder="Retype your password"
-          className="input input-bordered input-accent max-w-xs flex items-center w-full px-5 py-4 mr-2 text-sm font-medium outline-none mb-7 placeholder:text-grey-700 bg-grey-200 rounded-2xl"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-black text-white"
         />
       </div>
     </>
