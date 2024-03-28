@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import dogImage from './images/dog-testing.png';
 const TeamPage = () => {
@@ -46,7 +47,6 @@ const TeamPage = () => {
         <ul className="mx-auto mt-20 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3">
           {teamMembers.map((member) => (
             <li key={member.name} className="rounded-lg bg-purple-900 p-6">
-              {/* // eslint-disable-next-line @next/next/no-img-element */}
               <img className="aspect-[3/2] w-full rounded-lg object-cover" src={member.image} alt={member.name} />
               <div className="mt-6">
                 <h3 className="text-lg font-semibold leading-8 tracking-tight text-white">{member.name}</h3>
