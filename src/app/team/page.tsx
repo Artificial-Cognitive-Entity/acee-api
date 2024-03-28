@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import dogImage from './images/dog-testing.png';
 const TeamPage = () => {
