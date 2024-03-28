@@ -4,7 +4,6 @@ require('dotenv').config();
 
 export async function POST(req: Request) {
     if (req.method !== 'POST') {
-        //res.status(405).json({ error: 'Method Not Allowed' });
         return Response.json(
             {message: "Method Not Allowed"},
             {status: 405}
@@ -15,7 +14,6 @@ export async function POST(req: Request) {
     console.log(body);
 
     if (!body.email || !body.token) {
-        //res.status(400).json({ error: 'Email is required' });
         return Response.json(
             {error: "Email is required"},
             {status: 400}
