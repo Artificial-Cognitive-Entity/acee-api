@@ -10,7 +10,6 @@ interface CellProp {
 }
 
 const EditableCell = ({ getValue, row, column, table }: CellProp) => {
-  
   const initialValue = getValue();
   const [value, setValue] = useState(initialValue);
   const columnMeta = column.columnDef.meta;
@@ -48,17 +47,17 @@ const EditableCell = ({ getValue, row, column, table }: CellProp) => {
       </select>
     ) : columnMeta?.type === "action" ? (
       <>
-        {value == "active" ? (
-          <div>{value}</div>
-        ) : (
-          <div className="border-red-500 border-2 rounded-lg">
-            <StatusOptions row={table.getRow(row.index).original} header="" value={value}></StatusOptions>
-          </div>
-        )}
+        <div className="border-red-500 border-2 rounded-lg">
+          <StatusOptions
+            row={table.getRow(row.index).original}
+            header=""
+            value={value}
+          ></StatusOptions>
+        </div>
       </>
     ) : (
       <input
-        value={value}
+        value={value.charAt(0).toUpperCase() + value.slice(1)}
         onBlur={onBlur}
         onChange={(e) => setValue(e.target.value)}
         className="text-center text-lg rounded-lg bg-transparent input w-4/5 over-hidden whitespace-nowrap text-ellipsis border-red-500 border-2"
@@ -69,7 +68,7 @@ const EditableCell = ({ getValue, row, column, table }: CellProp) => {
 
   return (
     <span className="text-center text-lg bg-transparent input w-4/5 over-hidden whitespace-nowrap text-ellipsis">
-      {value}
+      {value.charAt(0).toUpperCase() + value.slice(1)}
     </span>
   );
 };
