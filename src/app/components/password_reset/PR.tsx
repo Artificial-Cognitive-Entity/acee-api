@@ -5,6 +5,9 @@ import InputField from "./Input";
 import PRButton from "./PRButton";
 import { usePathname, useRouter } from "next/navigation";
 import Button from "../button";
+import { Error } from "../admin/CreateUser/Alerts";
+import { Transition } from "@headlessui/react";
+
 const PRForm: React.FC = () => {
   const router = useRouter();
   const url = usePathname();
@@ -39,7 +42,7 @@ const PRForm: React.FC = () => {
 
     const url = window.location.href;
 
-    const response = await fetch("/api/password_reset", {
+    const response = await fetch("/api/reset_password", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -75,6 +78,20 @@ const PRForm: React.FC = () => {
             </Button>
           </form>
         </div>
+        {error != "" && (
+          <Transition
+            appear={true}
+            show={true}
+            enter="transition-opacity duration-75"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="transition-opacity duration-150"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <Error className="mt-11">{error}</Error>
+          </Transition>
+        )}
       </div>
     </div>
   );
