@@ -36,6 +36,7 @@ export interface GroupMember {
   email: string;
   status: string;
   role: string;
+  token: string;
 }
 
 interface JiraNode extends ItemNode {
@@ -450,10 +451,9 @@ export async function getGroupMembers({
 
     let members = result[0][0].members.members;
 
-    console.log("Members", members);
     let group: Array<GroupMember> = [];
     for (let i = 0; i < members.length; i++) {
-      query = `SELECT user_id, first_name, last_name, email, status, role FROM users WHERE user_id = '${members[i]}'`;
+      query = `SELECT user_id, first_name, last_name, email, status, role, token FROM users WHERE user_id = '${members[i]}'`;
       result = await conn.query(query);
 
       group.push(result[0][0]);
