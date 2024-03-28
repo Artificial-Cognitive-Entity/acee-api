@@ -119,9 +119,9 @@ const SearchArea = () => {
             {results.length > 0 ? (
               <>
                 <div className="flex flex-col content-center text-base rounded-lg w-full">
-                  {results.map((project, index) => (
-                    <SearchResult project={project} key={index}></SearchResult>
-                  ))}
+                  {results.map((root, index) => (
+                    <SearchResult root={root} key={index}></SearchResult>
+                    ))}
                 </div>
               </>
             ) : (
