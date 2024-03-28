@@ -626,7 +626,8 @@ export async function searchDatabase({
       console.log(res[i].content_id)
     
       if (res[i].score! > 0.60) {
-        if (parsedInput.result[0].filter)
+        if (parsedInput.result[0].filter) {
+          // console.log(res[i].content_id)
           await groupByParent(
             projects,
             conn,
@@ -634,12 +635,13 @@ export async function searchDatabase({
             input!,
             parsedInput.result[0].filter.type
           );
-        else {
+        } else {
+          console.log(res[i].content_id)
           await groupByParent(projects, conn, res[i], input!);
         }
       }
     }
-    console.log(projects)
+    // console.log(projects)
     // projects = removeEmptyProjects(projects);
     // console.log(JSON.stringify(projects, null, 4));
     return projects;
@@ -654,8 +656,9 @@ export async function searchDatabase({
 }
 
 export async function getPreview(query: string, result: any) {
-  console.log(query)
-  console.log(result.content)
+  // console.log(query)
+  // console.log(result.content)
+  
   if(result.content_type === "text"){
     // const prompt: string = `Given the following prompt: "${query}", and the following block of content:
     //  "${result.content}", please extract the relevant text associated with the prompt. 
@@ -718,6 +721,8 @@ async function groupByParent(
   filter?: string
 ) {
   const document = await getDocument(conn, result, "search", filter);
+
+  // console.log(document)
 
   if (document == null) {
     return;
@@ -802,6 +807,7 @@ async function getDocument(
   let query;
 
   const content_id = result.content_id;
+  console.log(content_id)
   const node_id = result.node_id;
 
 
@@ -813,8 +819,12 @@ async function getDocument(
     query = `
     SELECT content, content_type FROM contents WHERE content_id = '${content_id}'`;
   }
-
+  console.log(query)
+  
+  console.log("Running getContent ran: ")
   let content: any = await getContent(conn, query);
+  console.log("CONTENT getContent ran: ")
+
   let node: any = await getNode(conn, node_id);
 
   if (content == null) {
@@ -855,6 +865,7 @@ async function getDocument(
 
 async function getContent(conn: mysql.Connection, query: string) {
   const content: any = await conn.query(query);
+  console.log(content)
   return content[0][0];
 }
 
