@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import mysql from "mysql2/promise";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
-import openai from "@/app/lib/models/openai"
+import openai from "@/app/lib/models/openai";
 import { ChatCompletionMessage } from "openai/resources/index.mjs";
 
 const HOST = process.env.HOST;
@@ -448,7 +448,7 @@ export async function getGroupMembers({
 
     let members = result[0][0].members.members;
 
-    console.log("Members",members);
+    console.log("Members", members);
     let group: Array<GroupMember> = [];
     for (let i = 0; i < members.length; i++) {
       query = `SELECT user_id, first_name, last_name, email, status, role FROM users WHERE user_id = '${members[i]}'`;
@@ -523,10 +523,10 @@ async function UpdateGroup({
 
     let members = result[0][0].members.members;
 
-    console.log("BEFORE", members)
+    console.log("BEFORE", members);
     members = await removeMember(target_id, members);
 
-    console.log("after", members)
+    console.log("after", members);
 
     const updatedMembers = {
       members: members,
@@ -622,10 +622,10 @@ export async function searchDatabase({
     let projects: any = [];
 
     for (let i = 0; i < res.length; i++) {
-      console.log(res[i].score)
-      console.log(res[i].content_id)
-    
-      if (res[i].score! > 0.60) {
+      console.log(res[i].score);
+      console.log(res[i].content_id);
+
+      if (res[i].score! > 0.6) {
         if (parsedInput.result[0].filter)
           await groupByParent(
             projects,
@@ -639,7 +639,7 @@ export async function searchDatabase({
         }
       }
     }
-    console.log(projects)
+    console.log(projects);
     // projects = removeEmptyProjects(projects);
     // console.log(JSON.stringify(projects, null, 4));
     return projects;
@@ -654,11 +654,11 @@ export async function searchDatabase({
 }
 
 export async function getPreview(query: string, result: any) {
-  console.log(query)
-  console.log(result.content)
-  if(result.content_type === "text"){
+  console.log(query);
+  console.log(result.content);
+  if (result.content_type === "text") {
     // const prompt: string = `Given the following prompt: "${query}", and the following block of content:
-    //  "${result.content}", please extract the relevant text associated with the prompt. 
+    //  "${result.content}", please extract the relevant text associated with the prompt.
 
     // Rules:
     // - you will ONLY respond with text from the content block, and NOTHING else.
@@ -670,7 +670,7 @@ export async function getPreview(query: string, result: any) {
     // Prompt: "incident response documentation"
     // Content Block: "Incident Response Plan (IRP) is to provide a structured approach for detecting, responding to, mitigating, and recovering from security incidents. This plan is designed to minimize the impact of incidents, protect our organization's assets, and ensure a swift return to normal operations."
     // Your Response: "
-    
+
     // `
     const prompt: string = `Given the following prompt: "${query}", and the following block of content:
     "${result.content}", please summarize the relevant content block and relate it to the prompt. 
@@ -684,12 +684,12 @@ export async function getPreview(query: string, result: any) {
         4) Your summary will not repeat the prompt.
         5) Your summary will not use the words "content block".
       
-      `
+      `;
 
     const systemMessage: ChatCompletionMessage = {
       role: "assistant",
-      content: prompt
-    }
+      content: prompt,
+    };
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -697,17 +697,15 @@ export async function getPreview(query: string, result: any) {
       messages: [systemMessage],
     });
 
-    if(response.choices[0].message.content != null){
-      return response.choices[0].message.content
+    if (response.choices[0].message.content != null) {
+      return response.choices[0].message.content;
     } else {
-      return "No Preview"
+      return "No Preview";
     }
-
   } else {
-    return "Image Image Image ... or code"
+    return "Image Image Image ... or code";
   }
 }
-
 
 // to group jira issues by project
 async function groupByParent(
@@ -724,7 +722,11 @@ async function groupByParent(
   }
 
   const node_result = findNode(document.node_id, projects);
-  if (document.parent_id == null && node_result == -1 && document.node_type != "space") {
+  if (
+    document.parent_id == null &&
+    node_result == -1 &&
+    document.node_type != "space"
+  ) {
     const root: ParentNode = {
       parent_title: document.node_title,
       parent_id: document.node_id,
@@ -804,7 +806,6 @@ async function getDocument(
   const content_id = result.content_id;
   const node_id = result.node_id;
 
-
   if (filter) {
     query = `
     SELECT content, content_type FROM contents WHERE content_id = '${content_id}' AND content_type = '${filter}'
@@ -851,7 +852,6 @@ async function getDocument(
     parent_id: node.parent_id == "null" ? null : node.parent_id,
   };
 }
-
 
 async function getContent(conn: mysql.Connection, query: string) {
   const content: any = await conn.query(query);
