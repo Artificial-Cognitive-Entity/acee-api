@@ -9,7 +9,7 @@ import { useSession } from "next-auth/react";
 
 const Path = (user: User) => {
   const pathName = usePathname();
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
   return (
     <div className="w-full">
       {Object.keys(user).length != 0 ? (
@@ -17,15 +17,17 @@ const Path = (user: User) => {
           {pathName === "/chat" && <ChatArea />}
           {pathName === "/search" && <SearchArea />}
           {pathName === "/dashboard" &&
-          user.role.toLowerCase() == "administrator" ? (
-            <DashArea
-              role={user.role}
-              id={user.id}
-              group={user.group}
-              email={user.email}
-            />
-          ) : (
-            <h1>you are not an admin!</h1>
+            user.role.toLowerCase() == "administrator" && (
+              <DashArea
+                role={user.role}
+                id={user.id}
+                group={user.group}
+                email={user.email}
+              />
+            )}
+
+          {pathName === "/dashboard" && user.role != "Administrator" && (
+            <h1>you do not have access to this page. not an admin</h1>
           )}
         </div>
       ) : (

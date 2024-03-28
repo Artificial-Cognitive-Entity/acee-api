@@ -50,7 +50,7 @@ const DashArea = (user: User) => {
             <div className="w-5/6 overflow-y-auto rounded-md">
               <div className="bg-base-300 rounded-b-md overflow-y-auto w-full">
                 <SWRConfig value={{ fetcher }}>
-                  {/* <UserTable toggleModal={toggleModal}></UserTable> */}
+                  <UserTable toggleModal={toggleModal}></UserTable>
                 </SWRConfig>
               </div>
             </div>
