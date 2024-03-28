@@ -5,6 +5,7 @@ import Button from "../button";
 import AddUserIcon from "./CreateUser/AddUserIcon";
 import type { User } from "next-auth";
 import { SWRConfig } from "swr";
+import Loader from "@/app/lib/loader";
 
 type MODALS = "CLOSED" | "CREATE" | "CONFIRM";
 const fetcher = (...args: Parameters<typeof fetch>) =>
@@ -12,6 +13,7 @@ const fetcher = (...args: Parameters<typeof fetch>) =>
 
 const DashArea = (user: User) => {
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [currentModal, setCurrentModal] = useState<MODALS>("CLOSED");
 
   const toggleModal = (type: string) => {
@@ -25,6 +27,14 @@ const DashArea = (user: User) => {
       }
     } else {
       setCurrentModal("CLOSED");
+    }
+  };
+
+  const loadingStatus = (status: boolean) => {
+    console.log(status);
+    if (status == false) {
+      console.log(status);
+      setLoading(status);
     }
   };
 
@@ -47,11 +57,17 @@ const DashArea = (user: User) => {
               {" "}
               manage your group below
             </div>
+            {loading && <Loader></Loader>}
             <div className="w-5/6 overflow-y-auto rounded-md">
-              <div className="bg-base-300 rounded-b-md overflow-y-auto w-full">
-                <SWRConfig value={{ fetcher }}>
-                  <UserTable toggleModal={toggleModal}></UserTable>
-                </SWRConfig>
+              <div className="w-full">
+                <div className="bg-base-300 rounded-b-md overflow-y-auto">
+                  <SWRConfig value={{ fetcher }}>
+                    <UserTable
+                      toggleModal={toggleModal}
+                      loadingState={loadingStatus}
+                    />
+                  </SWRConfig>
+                </div>
               </div>
             </div>
           </div>
