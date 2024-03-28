@@ -37,7 +37,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
         return [...originalData];
       });
     }
-  }, [isValidating, loadingState, originalData]);
+  }, [isValidating, originalData]);
 
   const table = useReactTable({
     data: info,
@@ -107,49 +107,60 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
                 </div>
               </div>
               <div className="overflow-y-auto rounded-md ">
-                <table className="table rounded-md">
-                  {/* head */}
+                {/* check if there are users to display */}
+                {table.getRowModel().rows.length > 0 ? (
+                  <>
+                    <table className="table rounded-md">
+                      {/* head */}
 
-                  {/* get column headers */}
-                  <thead>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      <tr className=" " key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => (
-                          <th className="w-1/6" key={header.id}>
-                            {/* display column headers */}
-                            <div className="flex justify-center">
-                              {flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                            </div>
-                          </th>
+                      {/* get column headers */}
+                      <thead>
+                        {table.getHeaderGroups().map((headerGroup) => (
+                          <tr className=" " key={headerGroup.id}>
+                            {headerGroup.headers.map((header) => (
+                              <th className="w-1/6" key={header.id}>
+                                {/* display column headers */}
+                                <div className="flex justify-center">
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                                </div>
+                              </th>
+                            ))}
+                          </tr>
                         ))}
-                      </tr>
-                    ))}
-                  </thead>
-                  <tbody>
-                    {/* rows */}
+                      </thead>
+                      <tbody>
+                        {/* rows */}
 
-                    <>
-                      {table.getRowModel().rows.map((row) => (
-                        <tr key={row.id} className="text-center">
-                          {row.getVisibleCells().map((cell) => (
-                            // display row data
-                            <td key={cell.id} className="">
-                              <div className="text-lg">
-                                {flexRender(
-                                  cell.column.columnDef.cell,
-                                  cell.getContext()
-                                )}
-                              </div>
-                            </td>
+                        <>
+                          {table.getRowModel().rows.map((row) => (
+                            <tr key={row.id} className="text-center">
+                              {row.getVisibleCells().map((cell) => (
+                                // display row data
+                                <td key={cell.id} className="">
+                                  <div className="text-lg">
+                                    {flexRender(
+                                      cell.column.columnDef.cell,
+                                      cell.getContext()
+                                    )}
+                                  </div>
+                                </td>
+                              ))}
+                            </tr>
                           ))}
-                        </tr>
-                      ))}
-                    </>
-                  </tbody>
-                </table>
+                        </>
+                      </tbody>
+                    </table>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-center items-center w-full h-44">
+                      no users to display
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
