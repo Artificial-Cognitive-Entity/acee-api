@@ -210,7 +210,6 @@ const generateToken = (id: string) => {
   });
 };
 
-
 //search for duplicate email address in users table
 export async function findEmail({
   conn,
@@ -244,20 +243,25 @@ export async function findEmail({
 
 //  delete user
 export async function deleteUser({
-  conn,
+  admin_group,
   user_id,
+  conn,
 }: {
-  conn?: mysql.Connection;
+  admin_group: string;
   user_id: string;
+  conn?: mysql.Connection;
 }) {
   try {
     if (!conn) {
       conn = await connectSingleStore();
     }
 
-    const query = `DELETE FROM users WHERE user_id =${user_id}`;
+    const query = `DELETE FROM users WHERE user_id = '${user_id}'`;
 
     const result: any = await conn.query(query);
+
+    const target_id = user_id;
+    await UpdateGroup({ admin_group, target_id, conn });
 
     if (result) {
       return result[0];
@@ -435,13 +439,13 @@ export async function getGroupMembers({
     let query = `SELECT members FROM groups WHERE group_title = '${admin_group}'`;
     let result: any = await conn.query(query);
 
-    if(result[0].length == 0)
-    {
-      return null
+    if (result[0].length == 0) {
+      return null;
     }
 
     let members = result[0][0].members.members;
 
+    console.log("Members",members);
     let group: Array<GroupMember> = [];
     for (let i = 0; i < members.length; i++) {
       query = `SELECT user_id, first_name, last_name, email, status, role FROM users WHERE user_id = '${members[i]}'`;
@@ -497,6 +501,46 @@ export async function addGroupMember({
   }
 }
 
+async function UpdateGroup({
+  admin_group,
+  target_id,
+  conn,
+}: {
+  admin_group: string;
+  target_id: string;
+  conn?: mysql.Connection;
+}) {
+  try {
+    if (!conn) {
+      conn = await connectSingleStore();
+    }
+
+    let query = `SELECT members FROM groups WHERE group_title = '${admin_group}'`;
+    let result: any = await conn.query(query);
+
+    let members = result[0][0].members.members;
+
+    console.log("BEFORE", members)
+    members = await removeMember(target_id, members);
+
+    console.log("after", members)
+
+    const updatedMembers = {
+      members: members,
+    };
+
+    query = `UPDATE groups SET members = '${JSON.stringify(
+      updatedMembers
+    )}' WHERE group_title = '${admin_group}'`;
+
+    result = await conn.query(query);
+
+    console.log(result);
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+}
 //finds the most relevant document to the user's query
 // used for chatting
 export async function findRelevantDocs({
@@ -933,6 +977,10 @@ function findChild(child_id: string, parentIndex: number, projects: any) {
 function removeEmptyProjects(projects: any) {
   // console.log("REMOVING EMPTY PROJECTS");
   return projects.filter((project: ParentNode) => project.children.length > 0);
+}
+
+function removeMember(target_id: string, members: Array<string>) {
+  return members.filter((id: string) => id != target_id);
 }
 
 function formatDateString(formatee: string) {

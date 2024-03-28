@@ -30,9 +30,9 @@ const UserTable = ({ toggleModal }: TableProps) => {
     if (isValidating) {
       return;
     } else {
-      if (Array.isArray(originalData)) {
-        setInfo([...originalData]);
-      }
+      setInfo(() => {
+        return [...originalData];
+      });
     }
   }, [isValidating, originalData]);
 
@@ -51,7 +51,6 @@ const UserTable = ({ toggleModal }: TableProps) => {
         ),
       revertData: (rowIndex: number, revert: boolean) => {
         if (revert) {
-          console.log("REVERTING...");
           setInfo((old: any[]) =>
             old.map((row: any, index: number) =>
               index === rowIndex ? originalData[rowIndex] : row
@@ -71,12 +70,22 @@ const UserTable = ({ toggleModal }: TableProps) => {
       },
       editedRows,
       setEditedRows,
+      removeRow: async (rowIndex: number) => {
+        const response = await fetch("/api/delete_user", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(info[rowIndex]),
+        });
+        return response.json();
+      },
     },
   });
 
   return (
     <>
-      {originalData ? (
+      {originalData && isValidating == false ? (
         <>
           <div className="overflow-y-auto rounded-md w-full"></div>
           <div className=" flex justify-between items-center bg-base-100 rounded-t-md text-center p-3 w-full">
