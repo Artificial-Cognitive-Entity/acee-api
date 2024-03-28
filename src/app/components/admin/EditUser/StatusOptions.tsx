@@ -1,13 +1,40 @@
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useRef, useState } from "react";
-import Button from "../../button";
+import Success, { Warning, Error } from "../CreateUser/Alerts";
 
 interface CellProp {
   value: string;
   header: string;
+  row: any;
 }
 
-export default function StatusOptions({ header, value }: CellProp) {
+export default function StatusOptions({ row, header, value }: CellProp) {
+  const [errorMessage, setErrorMessage] = useState("");
+  const [success, setSuccess] = useState("");
+  const [message, setMessage] = useState("");
+
+ 
+
+  const handleClick = async (e: any) => {
+    e.preventDefault();
+
+    const email = row.email;
+    const token = row.token;
+    const emailRes = await fetch("/api/send_verify_email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, token }),
+    });
+
+    console.log(emailRes)
+    const result = await emailRes.json();
+    console.log(result)
+   
+  };
+
+  console.log(row);
   return (
     <div className="">
       <Menu>
@@ -27,15 +54,27 @@ export default function StatusOptions({ header, value }: CellProp) {
             <div className="px-1 py-1">
               <Menu.Item>
                 {value == "Locked" ? (
-                  <Button>Unlock User</Button>
+                  <button className="btn btn-active rounded-md">
+                    Unlock User
+                  </button>
                 ) : (
-                  <Button>Resend Email</Button>
+                  <button
+                    onClick={handleClick}
+                    className="btn btn-active rounded-md z-30"
+                  >
+                    Resend Email
+                  </button>
                 )}
               </Menu.Item>
             </div>
           </Menu.Items>
         </Transition>
       </Menu>
+      <div className="w-full">
+        {success == "success" && <Success>{message}</Success>}
+        {success == "fail" && <Warning>{message}</Warning>}
+        {errorMessage != "" && <Error>{errorMessage}</Error>}
+      </div>
     </div>
   );
 }
