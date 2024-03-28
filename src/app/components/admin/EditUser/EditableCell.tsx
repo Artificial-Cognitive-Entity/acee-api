@@ -10,6 +10,7 @@ interface CellProp {
 }
 
 const EditableCell = ({ getValue, row, column, table }: CellProp) => {
+  
   const initialValue = getValue();
   const [value, setValue] = useState(initialValue);
   const columnMeta = column.columnDef.meta;
@@ -64,8 +65,6 @@ const EditableCell = ({ getValue, row, column, table }: CellProp) => {
         type={columnMeta?.type || "text"}
       />
     );
-
-    // type={columnMeta?.type || "text"}
   }
 
   return (

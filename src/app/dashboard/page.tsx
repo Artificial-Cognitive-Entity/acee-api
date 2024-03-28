@@ -5,22 +5,25 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 // import type { User } from "next/auth";
 
-
 // dashboard to display content
 const Dashboard = async () => {
-
   const session = await getServerSession(options);
 
   // redirect to login
-  if(!session)
-  {
-    redirect('/api/auth/signin?callbackUrl=/dashboard')
+  if (!session) {
+    redirect("/api/auth/signin?callbackUrl=/chat");
   }
-
-  const user = session.user
-
+  //
   return (
-    <><Dash role={user.role} id={user.id} group={user.group} email={user.email} /> </>
+    <div>
+      {session ? (
+        <>
+          <Dash />{" "}
+        </>
+      ) : (
+        <div>YOU ARE NOT LOGGED IN</div>
+      )}
+    </div>
   );
 };
 
