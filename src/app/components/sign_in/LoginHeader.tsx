@@ -8,4 +8,4 @@ const LoginHeader: React.FC = () => {
     );
   };
   
-export default LoginHeader;
+export default LoginHeader
