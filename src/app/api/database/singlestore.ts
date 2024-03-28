@@ -6,6 +6,8 @@ import jwt from "jsonwebtoken";
 import mysql from "mysql2/promise";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
+import openai from "@/app/lib/models/openai"
+import { ChatCompletionMessage } from "openai/resources/index.mjs";
 
 const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
@@ -61,6 +63,7 @@ interface ParentNode {
   parent_url: string;
   parent_content: string;
   parent_content_type: string;
+  parent_content_preview: string;
   parent_source: string;
   children_ids: Array<string>;
   children: Array<ChildNode>;
@@ -575,20 +578,25 @@ export async function searchDatabase({
     let projects: any = [];
 
     for (let i = 0; i < res.length; i++) {
-      if (res[i].score! > 0.65) {
+      console.log(res[i].score)
+      console.log(res[i].content_id)
+    
+      if (res[i].score! > 0.60) {
         if (parsedInput.result[0].filter)
           await groupByParent(
             projects,
             conn,
             res[i],
+            input!,
             parsedInput.result[0].filter.type
           );
         else {
-          await groupByParent(projects, conn, res[i]);
+          await groupByParent(projects, conn, res[i], input!);
         }
       }
     }
-    projects = removeEmptyProjects(projects);
+    console.log(projects)
+    // projects = removeEmptyProjects(projects);
     // console.log(JSON.stringify(projects, null, 4));
     return projects;
   } catch (error) {
@@ -601,11 +609,68 @@ export async function searchDatabase({
   }
 }
 
+export async function getPreview(query: string, result: any) {
+  console.log(query)
+  console.log(result.content)
+  if(result.content_type === "text"){
+    // const prompt: string = `Given the following prompt: "${query}", and the following block of content:
+    //  "${result.content}", please extract the relevant text associated with the prompt. 
+
+    // Rules:
+    // - you will ONLY respond with text from the content block, and NOTHING else.
+    // - you will prepend truncate the relative text from the content block (your response) with "..." and concatenate your response with "..."
+    // - you will truncate the relativie text from the content block (your response) to 200 characters or less
+    // - if you cannot find any relevant text pertaining to the prompt, you will return "No Preview Available"
+
+    // Example 1:
+    // Prompt: "incident response documentation"
+    // Content Block: "Incident Response Plan (IRP) is to provide a structured approach for detecting, responding to, mitigating, and recovering from security incidents. This plan is designed to minimize the impact of incidents, protect our organization's assets, and ensure a swift return to normal operations."
+    // Your Response: "
+    
+    // `
+    const prompt: string = `Given the following prompt: "${query}", and the following block of content:
+    "${result.content}", please summarize the relevant content block and relate it to the prompt. 
+
+      You will adhere to all of the following rules when generating your response:
+
+      Rules:
+        1) Your summary will ONLY reference the content block.
+        2) You will NOT generate summary information that is not reflected in the content block.
+        3) Your summary will be 3 sentences or less.
+        4) Your summary will not repeat the prompt.
+        5) Your summary will not use the words "content block".
+      
+      `
+
+    const systemMessage: ChatCompletionMessage = {
+      role: "assistant",
+      content: prompt
+    }
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      stream: false,
+      messages: [systemMessage],
+    });
+
+    if(response.choices[0].message.content != null){
+      return response.choices[0].message.content
+    } else {
+      return "No Preview"
+    }
+
+  } else {
+    return "Image Image Image ... or code"
+  }
+}
+
+
 // to group jira issues by project
 async function groupByParent(
   projects: any,
   conn: mysql.Connection,
   result: any,
+  query?: string,
   filter?: string
 ) {
   const document = await getDocument(conn, result, "search", filter);
@@ -614,19 +679,15 @@ async function groupByParent(
     return;
   }
 
-  // console.log(projects);
-  // console.log("LOOKING A THTIS SUTPUD FUCKING DOCUMENT");
-  // console.log(document);
-  // document is the root node
-
   const node_result = findNode(document.node_id, projects);
-  if (document.parent_id == null && node_result == -1) {
+  if (document.parent_id == null && node_result == -1 && document.node_type != "space") {
     const root: ParentNode = {
       parent_title: document.node_title,
       parent_id: document.node_id,
       parent_type: document.node_type,
       parent_url: document.url,
       parent_content: document.content,
+      parent_content_preview: await getPreview(query!, document),
       parent_content_type: document.content_type,
       parent_source: document.data_source,
       children_ids: document.children_ids,
@@ -672,6 +733,7 @@ async function groupByParent(
         parent_url: parent.url,
         parent_content: parent_content.content,
         parent_content_type: parent_content.content_type,
+        parent_content_preview: await getPreview(query!, document),
         parent_source: parent.data_source,
         children_ids: JSON.parse(parent.children_ids),
         children: [],
@@ -697,6 +759,7 @@ async function getDocument(
 
   const content_id = result.content_id;
   const node_id = result.node_id;
+
 
   if (filter) {
     query = `
@@ -744,6 +807,7 @@ async function getDocument(
     parent_id: node.parent_id == "null" ? null : node.parent_id,
   };
 }
+
 
 async function getContent(conn: mysql.Connection, query: string) {
   const content: any = await conn.query(query);
