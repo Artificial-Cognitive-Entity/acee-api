@@ -5,20 +5,24 @@ import { Confluence } from "@styled-icons/simple-icons";
 import { Dot } from "@styled-icons/bootstrap";
 import Boards from "./Board";
 import { ExternalLink } from "../ExternalLink";
-import openai from "@/app/lib/models/openai"
+import Image from "next/image";
+import openai from "@/app/lib/models/openai";
 import { ChatCompletionMessage } from "openai/resources/index.mjs";
 
-const truncateText = (project:any) => {
-  if(project.parent_content_type === "text" || project.parent_content_type === "title" ){
-    const text = project.parent_content
+const truncateText = (project: any) => {
+  if (
+    project.parent_content_type === "text" ||
+    project.parent_content_type === "title"
+  ) {
+    const text = project.parent_content;
     const maxLength = 100;
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    return text.length > maxLength
+      ? text.substring(0, maxLength) + "..."
+      : text;
   } else {
-    return project.parent_content_type
+    return project.parent_content_type;
   }
 };
-
-
 
 const AccordionProject = ({ project }: { project: any }) => {
   return (
@@ -41,27 +45,44 @@ const AccordionProject = ({ project }: { project: any }) => {
             )}
             <div className="flex flex-col ml-4">
               <h1 className="ml-4 mr-4">{`${project.parent_title}`}</h1>
-              <div className="text-blue-600 text-sm hover:underline cursor-pointer ml-4 mr-4 z-10">
-                <ExternalLink href={project.parent_url}>{project.parent_url}</ExternalLink>
+              <div className="text-blue-600 text-sm  ml-4 mr-4 z-10">
+                <div className="z-10 hover:underline cursor-pointer">
+                  <ExternalLink href={project.parent_url}>
+                    {project.parent_url}
+                  </ExternalLink>
+                </div>
               </div>
-              <p className="text-sm ml-4 mr-4">{project.parent_content_preview}</p> {/* Summary text */}
+
+              {project.parent_content_type != "image" &&
+                project.parent_content_type != "code" && (
+                  <p className="text-sm ml-4 mr-4">
+                    {project.parent_content_preview}
+                  </p>
+                )}
+
+              {/* Summary text */}
+              {project.parent_content_type == "image" && (
+                <div className="flex content-center justify-center w-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    className="rounded-lg"
+                    alt="image from google bucket"
+                    src={project.parent_content}
+                  />
+                </div>
+              )}
             </div>
-
           </div>
-          
 
-            <div className=" inline-flex items-center rounded-xl transition ease-in-out delay-150 hover:cursor-pointer">
-
-               
-
-              {/* <div>
+          <div className=" inline-flex items-center rounded-xl transition ease-in-out delay-150 hover:cursor-pointer">
+            {/* <div>
                 {project.project_info.project_status == "active" ? (
                   <Dot className="w-14 h-14 animate-pulse hover:no-animation text-green-700" />
                 ) : (
                   <Dot className="w-10 h-10 animate-pulse text-red-700" />
                 )}
               </div> */}
-            </div>
+          </div>
           {/* </div> */}
         </div>
         <div className="collapse-content">
@@ -82,16 +103,4 @@ const AccordionProject = ({ project }: { project: any }) => {
   );
 };
 
-// <div className="flex-col w-full">
-
-//             {project.project_info.boards.length > 0 ? (
-//               <>
-//                 {project.project_info.boards.map((board: any, index: any) => (
-//                   <Boards board={board} key={index}></Boards>
-//                 ))}
-//               </>
-//             ) : (
-//               <></>
-//             )}
-//           </div>
 export default AccordionProject;
