@@ -13,17 +13,7 @@ export default function StatusOptions({ row, header, value }: CellProp) {
   const [success, setSuccess] = useState("");
   const [message, setMessage] = useState("");
 
-  const displayStatus = (mess: string, status: number) => {
-
-    console.log(status)
-    if (status == 200) {
-      setSuccess("success");
-      setMessage(mess);
-    } else {
-      setSuccess("fail");
-      setMessage(mess);
-    }
-  };
+ 
 
   const handleClick = async (e: any) => {
     e.preventDefault();
@@ -41,11 +31,7 @@ export default function StatusOptions({ row, header, value }: CellProp) {
     console.log(emailRes)
     const result = await emailRes.json();
     console.log(result)
-    if (result.status == 200) {
-      displayStatus(result.message, result.status);
-    } else {
-      displayStatus(result.error, result.status);
-    }
+   
   };
 
   console.log(row);

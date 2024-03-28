@@ -52,7 +52,7 @@ const EditableCell = ({ getValue, row, column, table }: CellProp) => {
           <div>{value}</div>
         ) : (
           <div className="border-red-500 border-2 rounded-lg">
-            <StatusOptions header="" value={value}></StatusOptions>
+            <StatusOptions row={table.getRow(row.index).original} header="" value={value}></StatusOptions>
           </div>
         )}
       </>
