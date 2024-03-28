@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import useSWR from "swr";
+import useSWRImmutable from "swr";
 
 // TODO: ERROR HANDLING
 // TODO: LOADING STATE
@@ -22,7 +22,7 @@ import AddUserIcon from "../CreateUser/AddUserIcon";
 import Button from "../../button";
 
 const UserTable = ({ toggleModal, loadingState }: TableProps) => {
-  const { data: originalData, isValidating, error } = useSWR("/api/get_group");
+  const { data: originalData, isValidating, error } = useSWRImmutable("/api/get_group", {revalidateOnFocus: false, refreshInterval: 3000});
 
   const [editedRows, setEditedRows] = useState({});
   const [info, setInfo] = useState<any>([]);
@@ -88,7 +88,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
 
   return (
     <>
-      {originalData && isValidating == false && (
+      {originalData && (
         <>
           <div className="overflow-y-auto rounded-md">
             <div className="bg-base-300 rounded-b-md overflow-y-auto w-full">
@@ -136,7 +136,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
 
                         <>
                           {table.getRowModel().rows.map((row) => (
-                            <tr key={row.id} className="text-center">
+                            <tr key={row.id} className="text-center min-h-80">
                               {row.getVisibleCells().map((cell) => (
                                 // display row data
                                 <td key={cell.id} className="">

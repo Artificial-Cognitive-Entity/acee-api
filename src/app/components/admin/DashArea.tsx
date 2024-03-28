@@ -60,14 +60,17 @@ const DashArea = (user: User) => {
 
             <div className="w-5/6 overflow-y-auto rounded-md">
               <div className="w-full">
-                <div className="bg-base-300 rounded-b-md overflow-y-auto">
-                  <SWRConfig value={{ fetcher }}>
-                    <UserTable
-                      toggleModal={toggleModal}
-                      loadingState={loadingStatus}
-                    />
-                  </SWRConfig>
-                  {loading && <Loader></Loader>}
+                <div className="bg-base-300 rounded-b-md overflow-y-auto min-h-80">
+                  {loading ? (
+                    <Loader></Loader>
+                  ) : (
+                    <SWRConfig value={{ fetcher }}>
+                      <UserTable
+                        toggleModal={toggleModal}
+                        loadingState={loadingStatus}
+                      />
+                    </SWRConfig>
+                  )}
                 </div>
               </div>
             </div>
