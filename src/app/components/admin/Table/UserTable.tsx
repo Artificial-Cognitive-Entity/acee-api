@@ -37,7 +37,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
         return [...originalData];
       });
     }
-  }, [isValidating, originalData]);
+  }, [isValidating, loadingState, originalData]);
 
   const table = useReactTable({
     data: info,
