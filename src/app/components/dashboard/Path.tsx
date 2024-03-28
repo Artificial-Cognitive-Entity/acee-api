@@ -10,8 +10,6 @@ import { useSession } from "next-auth/react";
 const Path = (user: User) => {
   const pathName = usePathname();
   const { data: session, status } = useSession()
-  console.log(session)
-  console.log(user)
   return (
     <div className="w-full">
       {Object.keys(user).length != 0 ? (
