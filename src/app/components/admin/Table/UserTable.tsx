@@ -83,6 +83,9 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
         delete updatedEditedRows[rowIndex];
         setEditedRows(updatedEditedRows);
       },
+      showConfirm: (rowIndex: number) => {
+        console.log("hello");
+      },
       removeRow: async (rowIndex: number) => {
         setInfo((old: any[]) =>
           old.filter((row: any, index: number) => index !== rowIndex)
@@ -108,7 +111,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
   return (
     <>
       {originalData && (
-        <div className="bg-black rounded-lg shadow-lg">
+        <div className="bg-black rounded-lg shadow-lg shrink-0 grow-0 basis-0">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-700">
             <div className="flex justify-center items-center">
               <Button
@@ -121,7 +124,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-700 text-center">
+            <table className="min-w-full divide-y divide-gray-700 text-center w-full">
               <thead className="bg-gray-800">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
@@ -148,18 +151,9 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
                         key={cell.id}
                         className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"
                       >
-                        {cell.id == "edit" ? (
-                          <div onClick={() => toggleModal("CONFIRM")}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </div>
-                        ) : (
-                          flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
                         )}
                       </td>
                     ))}
