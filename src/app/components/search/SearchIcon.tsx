@@ -1,11 +1,11 @@
 'use client'
 import React from 'react'
-import { Search } from '@styled-icons/bootstrap' 
+import { DatabaseSearch } from '@styled-icons/fluentui-system-filled' 
 
 // search icon
 const SearchIcon = () => {
   return (
-    <Search className="w-36 h-36"></Search>
+    <DatabaseSearch className="w-60 h-60 text-purple-900"></DatabaseSearch>
   )
 }
 
