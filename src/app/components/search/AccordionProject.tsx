@@ -2,6 +2,7 @@
 import React from "react";
 import { Jirasoftware } from "@styled-icons/simple-icons";
 import { Confluence } from "@styled-icons/simple-icons";
+import { GoogleDrive } from "@styled-icons/entypo-social/GoogleDrive";
 import { Dot } from "@styled-icons/bootstrap";
 import Boards from "./Board";
 import { ExternalLink } from "../ExternalLink";
@@ -10,7 +11,7 @@ import Image from "next/image";
 import openai from "@/app/lib/models/openai";
 import { ChatCompletionMessage } from "openai/resources/index.mjs";
 import { FolderFill } from '@styled-icons/bootstrap/FolderFill';
-
+import DriveIcon from "./DriveIcon"
 
 // const ConfluenceIcon = () => {
 //   // Replace the path with the actual path to your icon
@@ -55,6 +56,12 @@ const AccordionRoot = ({ root }: { root: any }) => {
           {root.node_source == "confluence" && (
             <Confluence className="w-12 h-12 ml-2 mr-2 grow-0 shrink-0 basis-auto self-center text-blue-700" />
           )}
+
+          {root.node_source == "google_drive" && (
+            <div className="w-12 h-12 ml-2 mr-2 grow-0 shrink-0 basis-auto self-center"><DriveIcon/></div>
+            // <GoogleDrive className="w-12 h-12 ml-2 mr-2 grow-0 shrink-0 basis-auto self-center text-blue-700" />
+          )}
+
           <div className="flex flex-col ml-4">
             <h1 className="ml-4 mr-4">{`${root.node_title}`}</h1>
             <div className="text-blue-600 text-sm  ml-4 mr-4 z-10">
@@ -80,11 +87,17 @@ const AccordionRoot = ({ root }: { root: any }) => {
               <p className="inline"> • Updated {convertToReadableDate(root.last_updated)} • Confidence {toPercentage(root.score)} | </p>
               {root.node_source == "jira" && (
                 <Jirasoftware className="w-3 h-3 inline-block align-middle"/>
-              )}
+              ) && <p className="inline"> Jira</p>}
+
               {root.node_source == "confluence" && (
                 <Confluence className="w-3 h-3 inline-block align-middle"/>
-              )}
-              <p className="inline"> {capitalizeFirstLetter(root.node_source)}</p>
+             && <p className="inline"> Confluence</p>)}
+
+              {root.node_source == "google_drive" && (
+                <div className="w-3 h-3 inline-block align-middle"><DriveIcon/></div>
+                // <GoogleDrive className="w-94 h-94 inline-block align-middle"/>)
+               && <p className="inline"> Google Drive</p>)}
+               
             </div>
           </div>
         </div>

@@ -735,6 +735,7 @@ async function fetchAndAddToNodeList(
   query?: string,
   filter?: string
 ) {
+  console.log("NODE ID : " + result.node_id)
   const pair = await getNodeContentPair(conn, result, "search", result.score, filter);
 
   if (pair == null) {
@@ -773,7 +774,6 @@ async function getNodeContentPair(
   let query;
 
   const content_id = result.content_id;
-  const node_id = result.node_id;
 
   if (filter) {
     query = `
@@ -785,6 +785,7 @@ async function getNodeContentPair(
   }
 
   let content: any = await getContent(conn, query);
+  let node_id: any = await getNodeId(conn, content_id);
   let node: any = await getNode(conn, node_id);
   // let parent:any = await getNode(conn, node.parent_id);
   let parent: any = node && node.parent_id !== "null" ? await getNode(conn, node.parent_id) : null;
@@ -854,6 +855,15 @@ async function getNode(conn: mysql.Connection, node_id: string) {
   `;
   const result: any = await conn.query(query);
   return result[0][0];
+}
+
+async function getNodeId(conn: mysql.Connection, content_id: string) {
+  const query = `
+  SELECT distinct node_id FROM contents WHERE content_id = '${content_id}'
+  `;
+  const result: any = await conn.query(query);
+  console.log(JSON.stringify(result))
+  return result[0][0].node_id
 }
 
 //utility functions
