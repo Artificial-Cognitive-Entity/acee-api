@@ -50,13 +50,25 @@ const EditControls = ({ row, table }: CellProps) => {
       </Button>
     </div>
   ) : (
-    <Button
-      className=" base-content w-12 h-12"
-      name="edit"
-      onClick={setEditedRows}
-    >
-      <EditIcon />
-    </Button>
+    <>
+      <div className="flex justify-center gap-3 ">
+        <Button className="text-white invisible disabled:" name="done" onClick={setEditedRows}>
+          <AcceptIcon></AcceptIcon>
+        </Button>
+    
+        <Button
+        className=" base-content w-12 h-12"
+        name="edit"
+        onClick={setEditedRows}
+      >
+        <EditIcon />
+      </Button>
+        <Button className="text-white invisible disabled" name="delete" onClick={removeRow}>
+          <TrashIcon />
+        </Button>
+      </div>
+
+    </>
   );
 };
 
