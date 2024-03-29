@@ -18,7 +18,8 @@ ENV ENDPOINT=us-central1-aiplatform.googleapis.com
 ENV MODEL=textembedding-gecko@003
 ENV PUBLISHER=google
 ENV JWT_SECRET=4f432aacc3a25feccbf3c92a6c3bc089c3c8a467507c9dd91392783a8b4b5ac0
-ENV NEXTAUTH_URL=http://localhost:3000
+ENV NEXTAUTH_URL=https://acee-api-tbilz672oa-ue.a.run.app
+ENV ACEE_URL=https://acee-api-tbilz672oa-ue.a.run.app
 ENV NEXTAUTH_SECRET=90a31bdb7fb3bc4a461b7c7c6b9dcd858961cbc2131c25f306d8c0fda9035ad9
 
 # Copy package.json and package-lock.json to the container  

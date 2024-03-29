@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
 
     //PROECT THE TOKEN AND HASH THE PASSWORD
-    const resetLink = `http://localhost:3000/password_reset?token=${body.token}`;
+    const resetLink = `${process.env.ACEE_URL}/password_reset?token=${body.token}`;
 
     try {
         await transporter.sendMail({
