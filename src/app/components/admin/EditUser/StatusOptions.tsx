@@ -70,14 +70,14 @@ export default function StatusOptions({ row, header, value }: CellProp) {
             <div className="px-1 py-1">
               <Menu.Item as="div">
                 {value == "Locked" && (
-                  <button className="btn btn-active rounded-md">
+                  <button className="btn btn-active rounded-md  bg-black  hover:bg-purple-600">
                     Unlock User
                   </button>
                 )}
                 {value == "Unverified" && (
                   <button
                     onClick={handleClick}
-                    className="btn btn-active rounded-md z-30"
+                    className="btn btn-active rounded-md z-30  bg-black  hover:bg-purple-600"
                   >
                     Resend Email
                   </button>
@@ -85,7 +85,10 @@ export default function StatusOptions({ row, header, value }: CellProp) {
 
                 {value == "Active" && (
                   <>
-                    <button onClick={handleReset} className="btn btn-active rounded-md z-30">
+                    <button
+                      onClick={handleReset}
+                      className="btn btn-active bg-black hover:bg-purple-600 rounded-md z-30"
+                    >
                       Reset Password
                     </button>
                   </>

@@ -33,7 +33,7 @@ const EditableCell: React.FC<CellProp> = ({ getValue, row, column, table }) => {
     if (tableMeta?.editedRows[row.id]) {
       return columnMeta?.type === "select" ? (
         <select
-          className="select bg-transparent border-purple-600 border-2 rounded-lg text-lg"
+          className="select bg-transparent shrink-0 grow-0 basis-auto border-purple-600 border-2 rounded-lg text-lg"
           onChange={onSelectChange}
           value={initialValue}
         >

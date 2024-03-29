@@ -46,9 +46,9 @@ const Sidebar = (user: User) => {
             <RobotIcon />
           </Link>
         </li>
-        <li>
+        {/* <li>
           <ModeSwap />
-        </li>
+        </li> */}
         <li>
           <button
             className="justify-center flex text-white bg-purple-900 hover:bg-purple-700 px-4 py-2 rounded-md"
