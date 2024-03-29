@@ -7,7 +7,12 @@ import { Warning } from "./Alerts";
 import { Transition } from "@headlessui/react";
 import type { User } from "next-auth";
 
-const UserForm = (user: User) => {
+interface FormProps {
+AddRow: (user:any) => any
+user: User;
+}
+
+const UserForm = ({AddRow, user}: FormProps) => {
   const [formData, setFormData] = useState<any>({
     fName: "",
     lName: "",
@@ -55,8 +60,14 @@ const UserForm = (user: User) => {
       const response = await res.json();
       setErrorMessage(response.message);
     } else if (res.status == 200) {
+
       const response = await res.json();
+
       displayStatus(response.message, res.status);
+
+      setTimeout(function(){
+        location.reload();
+    }, 3500)
 
       // reset the form
       setFormData({
@@ -65,6 +76,8 @@ const UserForm = (user: User) => {
         email: "",
         role: "",
       });
+
+
     }
 
     //conflict error (duplicate email)
