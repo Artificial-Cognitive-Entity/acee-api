@@ -21,6 +21,8 @@ ENV JWT_SECRET=4f432aacc3a25feccbf3c92a6c3bc089c3c8a467507c9dd91392783a8b4b5ac0
 ENV NEXTAUTH_URL=https://acee-api-tbilz672oa-ue.a.run.app
 ENV ACEE_URL=https://acee-api-tbilz672oa-ue.a.run.app
 ENV NEXTAUTH_SECRET=90a31bdb7fb3bc4a461b7c7c6b9dcd858961cbc2131c25f306d8c0fda9035ad9
+ENV EMAIL_USERNAME=douglaskayla23@yahoo.com
+ENV EMAIL_PASSWORD=ontxhpnoqufbtgsa
 
 # Copy package.json and package-lock.json to the container  
 COPY package*.json ./  
