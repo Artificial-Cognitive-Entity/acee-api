@@ -127,7 +127,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-700">
+            <table className="min-w-full divide-y divide-gray-700 text-center">
               <thead className="bg-gray-800">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
@@ -135,7 +135,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
                       <th
                         key={header.id}
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
+                        className="px-6 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider"
                       >
                         {flexRender(
                           header.column.columnDef.header,
