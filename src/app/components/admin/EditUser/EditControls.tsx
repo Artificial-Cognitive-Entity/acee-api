@@ -52,12 +52,12 @@ const EditControls = ({ row, table }: CellProps) => {
   ) : (
     <>
       <div className="flex justify-center gap-3 ">
-        <Button className="text-white invisible disabled:" name="done" onClick={setEditedRows}>
+        <Button className="text-white invisible disabled" name="done" onClick={setEditedRows}>
           <AcceptIcon></AcceptIcon>
         </Button>
     
         <Button
-        className=" base-content w-12 h-12"
+        className=" base-content"
         name="edit"
         onClick={setEditedRows}
       >
