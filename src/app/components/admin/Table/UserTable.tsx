@@ -1,35 +1,32 @@
-import React, { useEffect, useState } from "react";
-import useSWR from "swr";
-
-// TODO: ERROR HANDLING
-// TODO: LOADING STATE
-
 interface TableProps {
   toggleModal: (type: string) => void;
+  loadingState: (status: boolean) => void;
 }
 
+import React, { useEffect, useState } from "react";
+import useSWRImmutable from "swr";
 import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
 import { columns } from "@/app/components/admin/Table/columns";
-import Loader from "@/app/lib/loader";
 import AddUserIcon from "../CreateUser/AddUserIcon";
 import Button from "../../button";
 
-const UserTable = ({ toggleModal }: TableProps) => {
-  const { data: originalData, isValidating, error } = useSWR("/api/get_group");
+const UserTable = ({ toggleModal, loadingState }: TableProps) => {
+  const { data: originalData, isValidating, error } = useSWRImmutable("/api/get_group", {revalidateOnFocus: false, refreshInterval: 3000});
 
   const [editedRows, setEditedRows] = useState({});
   const [info, setInfo] = useState<any>([]);
 
   useEffect(() => {
     if (isValidating) {
+      loadingState(isValidating);
       return;
     } else {
+      loadingState(isValidating);
       setInfo(() => {
         return [...originalData];
       });
@@ -43,7 +40,6 @@ const UserTable = ({ toggleModal }: TableProps) => {
     getFilteredRowModel: getFilteredRowModel(),
     meta: {
       updateData: (rowIndex: number, columnID: string, value: string) =>
-        // change the target cell only
         setInfo((prev: any[]) =>
           prev.map((row: any, index: number) =>
             index === rowIndex ? { ...prev[rowIndex], [columnID]: value } : row
@@ -85,13 +81,10 @@ const UserTable = ({ toggleModal }: TableProps) => {
 
   return (
     <>
-      {originalData && isValidating == false ? (
-        <>
-          <div className="overflow-y-auto rounded-md w-full"></div>
-          <div className=" flex justify-between items-center bg-base-100 rounded-t-md text-center p-3 w-full">
-            <p>people in your group</p>
-
-            <div className="flex content-center justify-center gap-3">
+      {originalData && (
+        <div className="bg-black rounded-lg shadow-lg">
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-700">
+            <div className="flex justify-center items-center">
               <Button
                 onClick={() => {
                   toggleModal("CREATE");
@@ -101,55 +94,45 @@ const UserTable = ({ toggleModal }: TableProps) => {
               </Button>
             </div>
           </div>
-          <div className="overflow-y-auto rounded-md ">
-            <table className="table rounded-md">
-              {/* head */}
-
-              {/* get column headers */}
-              <thead>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-700">
+              <thead className="bg-gray-800">
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <tr className=" " key={headerGroup.id}>
+                  <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
-                      <th className="w-1/6" key={header.id}>
-                        {/* display column headers */}
-                        <div className="flex justify-center">
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                        </div>
+                      <th
+                        key={header.id}
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                       </th>
                     ))}
                   </tr>
                 ))}
               </thead>
-              <tbody>
-                {/* rows */}
-
-                <>
-                  {table.getRowModel().rows.map((row) => (
-                    <tr key={row.id} className="text-center">
-                      {row.getVisibleCells().map((cell) => (
-                        // display row data
-                        <td key={cell.id} className="">
-                          <div className="text-lg">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </div>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </>
+              <tbody className="bg-gray-900 divide-y divide-gray-700">
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <td
+                        key={cell.id}
+                        className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-        </>
-      ) : (
-        <div className="flex w-full h-full justify-center align-center">
-          <Loader></Loader>
         </div>
       )}
     </>

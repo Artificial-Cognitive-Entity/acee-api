@@ -36,6 +36,7 @@ export interface GroupMember {
   email: string;
   status: string;
   role: string;
+  token: string;
 }
 
 interface JiraNode extends ItemNode {
@@ -406,21 +407,23 @@ export async function addUser(
     // generate a password, an id, and a token for the new user
     const password = await generatePassword();
     const target_id = uuidv4();
-    const token = generateToken(target_id);
+    const token: string = generateToken(target_id);
 
     const query = `INSERT INTO users (user_id, groups, first_name, last_name, email, password, status, session_id, created_at, role, conversations, token) 
     VALUES("${target_id}",'${
       admin.group
     }',"${fName}","${lName}","${email}","${password}","Unverified",${null},"${date}",'${role}',${null}, "${token}")`;
-    const result = await conn.query(query);
+    const result: any = await conn.query(query);
 
     const admin_group = admin.group;
     await addGroupMember({ admin_group, target_id, conn });
 
     if (result) {
-      return true;
-    } else {
-      return false;
+      return token;
+    } 
+
+    else{
+      return null
     }
   } catch (error) {
     console.log(error);
@@ -453,10 +456,9 @@ export async function getGroupMembers({
 
     let members = result[0][0].members.members;
 
-    console.log("Members", members);
     let group: Array<GroupMember> = [];
     for (let i = 0; i < members.length; i++) {
-      query = `SELECT user_id, first_name, last_name, email, status, role FROM users WHERE user_id = '${members[i]}'`;
+      query = `SELECT user_id, first_name, last_name, email, status, role, token FROM users WHERE user_id = '${members[i]}'`;
       result = await conn.query(query);
 
       group.push(result[0][0]);

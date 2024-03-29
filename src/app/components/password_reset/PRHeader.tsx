@@ -1,14 +1,11 @@
 import React from 'react'
 
-const PRHeader = () => {
+const PRHeader: React.FC = () => {
     return (
-        <>
-            <h3 className="mb-10 text-4xl font-extrabold text-dark-grey-900">
-                Password Reset
-            </h3>
-        </>
-
-    )
-}
-
-export default PRHeader
+      <h3 className="mb-10 text-4xl font-extrabold text-white text-center">
+        Password Reset
+      </h3>
+    );
+  };
+  
+  export default PRHeader;
