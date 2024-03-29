@@ -57,15 +57,20 @@ interface ChildNode {
   items: Array<ItemNode>;
 }
 
-interface ParentNode {
-  parent_title: string;
+interface NodeContentPair {
+  score: GLfloat;
+  node_id: string;
+  node_title: string;
   parent_id: string;
-  parent_type: string;
-  parent_url: string;
-  parent_content: string;
-  parent_content_type: string;
-  parent_content_preview: string;
-  parent_source: string;
+  parent_node_title: string,
+  parent_node_url: string,
+  node_type: string;
+  url: string;
+  content: string;
+  content_type: string;
+  content_preview: string;
+  last_updated: string;
+  node_source: string;
   children_ids: Array<string>;
   children: Array<ChildNode>;
 }
@@ -546,7 +551,7 @@ async function UpdateGroup({
     return error;
   }
 }
-//finds the most relevant document to the user's query
+//finds the most relevant pair to the user's query
 // used for chatting
 export async function findRelevantDocs({
   conn,
@@ -567,13 +572,13 @@ export async function findRelevantDocs({
     const embedQuery =
       "SELECT content_id, DOT_PRODUCT_F64(JSON_ARRAY_PACK_F64('[" +
       embedding +
-      "]'), embedding) AS score FROM embeddings ORDER BY score DESC";
+      "]'), embedding) AS score FROM embeddings ORDER BY score DESC LIMIT 3";
 
     const res: Array<ID> = await getIDs(conn, embedQuery, "chat");
     let array: Array<any> = [];
 
     for (let i = 0; i < res.length; i++) {
-      await groupByParent(array, conn, res[i]);
+      await fetchAndAddToNodeList(array, conn, res[i]);
     }
 
     // console.log(array);
@@ -620,31 +625,59 @@ export async function searchDatabase({
       "]'), embedding) AS score FROM embeddings ORDER BY score DESC LIMIT 10 ";
 
     const res: Array<ID> = await getIDs(conn, embedQuery, "search");
-    // console.log(res);
-    let projects: any = [];
+    let node_list: any = [];
 
     for (let i = 0; i < res.length; i++) {
+      console.log("\nResult:")
       console.log(res[i].score);
       console.log(res[i].content_id);
 
-      if (res[i].score! > 0.6) {
+      console.log("Res: " + res[i].content_id)
+      console.log("Node list: " + JSON.stringify(node_list))
+
+      if (res[i].score! > 0.65) {
         if (parsedInput.result[0].filter)
-          await groupByParent(
-            projects,
+          await fetchAndAddToNodeList(
+            node_list,
             conn,
             res[i],
             input!,
             parsedInput.result[0].filter.type
           );
         else {
-          await groupByParent(projects, conn, res[i], input!);
+          await fetchAndAddToNodeList(node_list, conn, res[i], input!);
         }
       }
     }
-    console.log(projects);
-    // projects = removeEmptyProjects(projects);
-    // console.log(JSON.stringify(projects, null, 4));
-    return projects;
+
+    // Sort node_list
+    node_list.sort((node_a: NodeContentPair, node_b: NodeContentPair) => node_b.score - node_a.score);
+
+    const filtered_node_ids:string[] = []
+    const filtered_nodes:NodeContentPair[] = []
+
+    // Grab unique nodes and highest ranking text content for preview
+    for (const node of node_list) {
+      if (!filtered_node_ids.includes(node.node_id) && node.content_type == "text") {
+        filtered_nodes.push(node);
+        filtered_node_ids.push(node.node_id);
+      } else if (filtered_node_ids.includes(node.node_id) && node.content_type == "text") {
+        const existingNode = filtered_nodes.find((n) => n.node_id === node.node_id);
+        if (existingNode) {
+          existingNode.content += node.content;
+        }
+      }
+    }
+
+    // Generate content previews
+    for (const node of filtered_nodes){
+      node.content_preview = await getPreview(input!, node)
+    }
+    
+    console.log(filtered_nodes)
+
+    return filtered_nodes;
+
   } catch (error) {
     console.log(error);
     return error;
@@ -659,21 +692,6 @@ export async function getPreview(query: string, result: any) {
   console.log(query);
   console.log(result.content);
   if (result.content_type === "text") {
-    // const prompt: string = `Given the following prompt: "${query}", and the following block of content:
-    //  "${result.content}", please extract the relevant text associated with the prompt.
-
-    // Rules:
-    // - you will ONLY respond with text from the content block, and NOTHING else.
-    // - you will prepend truncate the relative text from the content block (your response) with "..." and concatenate your response with "..."
-    // - you will truncate the relativie text from the content block (your response) to 200 characters or less
-    // - if you cannot find any relevant text pertaining to the prompt, you will return "No Preview Available"
-
-    // Example 1:
-    // Prompt: "incident response documentation"
-    // Content Block: "Incident Response Plan (IRP) is to provide a structured approach for detecting, responding to, mitigating, and recovering from security incidents. This plan is designed to minimize the impact of incidents, protect our organization's assets, and ensure a swift return to normal operations."
-    // Your Response: "
-
-    // `
     const prompt: string = `Given the following prompt: "${query}", and the following block of content:
     "${result.content}", please summarize the relevant content block and relate it to the prompt. 
 
@@ -704,109 +722,58 @@ export async function getPreview(query: string, result: any) {
     } else {
       return "No Preview";
     }
-  } else {
-    return "Image Image Image ... or code";
+  } else { 
+    return ""
   }
 }
 
 // to group jira issues by project
-async function groupByParent(
-  projects: any,
+async function fetchAndAddToNodeList(
+  node_list: any,
   conn: mysql.Connection,
   result: any,
   query?: string,
   filter?: string
 ) {
-  const document = await getDocument(conn, result, "search", filter);
+  console.log("NODE ID : " + result.node_id)
+  const pair = await getNodeContentPair(conn, result, "search", result.score, filter);
 
-  if (document == null) {
+  if (pair == null) {
     return;
   }
 
-  const node_result = findNode(document.node_id, projects);
-  if (
-    document.parent_id == null &&
-    node_result == -1 &&
-    document.node_type != "space"
-  ) {
-    const root: ParentNode = {
-      parent_title: document.node_title,
-      parent_id: document.node_id,
-      parent_type: document.node_type,
-      parent_url: document.url,
-      parent_content: document.content,
-      parent_content_preview: await getPreview(query!, document),
-      parent_content_type: document.content_type,
-      parent_source: document.data_source,
-      children_ids: document.children_ids,
-      children: [],
-    };
-    // console.log("ADDING ROOT\n");
-    projects.push(root);
-  }
+  const root: NodeContentPair = {
+            score: result.score,
+            node_id: pair.node_id,
+            node_title: pair.node_title,
+            parent_id: pair.node_id,
+            parent_node_title: pair.parent_node_title == "null" ? null : pair.parent_node_title,
+            parent_node_url: pair.parent_node_url == "null" ? null : pair.parent_node_url,
+            node_type: pair.node_type,
+            url: pair.url,
+            content: pair.content,
+            content_preview: "placeholder",
+            last_updated: pair.last_updated,
+            content_type: pair.content_type,
+            node_source: pair.data_source,
+            children_ids: pair.children_ids,
+            children: [],
+          };
+  node_list.push(root);
 
-  // find the parent
-  else {
-    if (document.parent_id == null) {
-      return;
-    }
-    // console.log(projects);
-    const parentIndex = findParent(document.parent_id, projects);
-
-    // parent was found
-    if (parentIndex != -1) {
-      // add child
-      // console.log("PARENT FOUND");
-      await addChild(parentIndex, document, projects);
-    }
-
-    // child node (like page) is pulled in as a result before its parent (like space)
-    //  query the database for the parent
-    else {
-      // get document's parent
-      // console.log("PARENT NOT FOUND");
-      const parent = await getNode(conn, document.parent_id);
-
-      // console.log(parent);
-
-      // get parent's content
-      const query = `
-          SELECT content, content_type FROM contents WHERE node_id = '${parent.node_id}'`;
-      const parent_content = await getContent(conn, query);
-
-      const parent_obj: ParentNode = {
-        parent_title: parent.node_title,
-        parent_id: parent.node_id,
-        parent_type: parent.node_type,
-        parent_url: parent.url,
-        parent_content: parent_content.content,
-        parent_content_type: parent_content.content_type,
-        parent_content_preview: await getPreview(query!, document),
-        parent_source: parent.data_source,
-        children_ids: JSON.parse(parent.children_ids),
-        children: [],
-      };
-
-      projects.push(parent_obj);
-
-      const parent_index = findParent(parent_obj.parent_id, projects);
-
-      await addChild(parent_index, document, projects);
-    }
-  }
 }
 
 //get and format doc into json
-async function getDocument(
+async function getNodeContentPair(
   conn: mysql.Connection,
   result: any,
   type: string,
+  score: GLfloat,
   filter?: string
 ) {
   let query;
 
   const content_id = result.content_id;
-  const node_id = result.node_id;
 
   if (filter) {
     query = `
@@ -818,18 +785,35 @@ async function getDocument(
   }
 
   let content: any = await getContent(conn, query);
+  let node_id: any = await getNodeId(conn, content_id);
   let node: any = await getNode(conn, node_id);
+  // let parent:any = await getNode(conn, node.parent_id);
+  let parent: any = node && node.parent_id !== "null" ? await getNode(conn, node.parent_id) : null;
+
+  if (!node) {
+    console.error(`No node found for node_id: ${node_id}`);
+    return;
+  }
 
   if (content == null) {
     return;
   }
 
-  console.log(
-    `\nNODE TITLE: ${node.node_title}\nDATA SOURCE: ${node.data_source}\nPARENT_ID: ${node.parent_id}\nNODE_ID:${node.node_id} `
-  );
+  // console.log(
+  //   `\nNODE TITLE: ${node.node_title}\nDATA SOURCE: ${node.data_source}\nPARENT_ID: ${node.parent_id}\nNODE_ID:${node.node_id} `
+  // );
+
+  let parent_node_title = null;
+  let parent_node_url = null;
+
+  if (parent) {
+    parent_node_title = parent.node_title;
+    parent_node_url = parent.url;
+  }
 
   if (type == "search") {
     return {
+      score: score,
       node_title: node.node_title,
       node_id: node_id,
       node_type: node.node_type,
@@ -840,10 +824,13 @@ async function getDocument(
       last_updated: node.last_updated,
       parent_id: node.parent_id == "null" ? null : node.parent_id,
       children_ids: JSON.parse(node.children_ids),
+      parent_node_title: parent_node_title,
+      parent_node_url: parent_node_url
     };
   }
 
   return {
+    score: score,
     node_title: node.node_title,
     node_type: node.node_type,
     content: content.content,
@@ -851,7 +838,9 @@ async function getDocument(
     url: node.url,
     data_source: node.data_source,
     last_updated: node.last_updated,
-    parent_id: node.parent_id == "null" ? null : node.parent_id,
+    parent_id: parent ? null : node.parent_id,
+    parent_node_title: parent_node_title,
+    parent_node_url: parent_node_url
   };
 }
 
@@ -866,6 +855,15 @@ async function getNode(conn: mysql.Connection, node_id: string) {
   `;
   const result: any = await conn.query(query);
   return result[0][0];
+}
+
+async function getNodeId(conn: mysql.Connection, content_id: string) {
+  const query = `
+  SELECT distinct node_id FROM contents WHERE content_id = '${content_id}'
+  `;
+  const result: any = await conn.query(query);
+  console.log(JSON.stringify(result))
+  return result[0][0].node_id
 }
 
 //utility functions
@@ -909,15 +907,15 @@ async function getIDs(conn: mysql.Connection, query: string, type: string) {
   return result;
 }
 
-async function getJiraContent(document: any) {
+async function getJiraContent(pair: any) {
   // console.log("INSIDE GET JIRA CONTENT");
-  const parsedContent = await parseJira(document.content);
+  const parsedContent = await parseJira(pair.content);
   // console.log(parsedContent);
 
   const jira: JiraNode = {
-    content_type: document.content_type,
-    last_updated: document.last_updated,
-    source: document.data_source,
+    content_type: pair.content_type,
+    last_updated: pair.last_updated,
+    source: pair.data_source,
     issue_title: parsedContent.issue_title,
     issue_description: parsedContent.issue_description,
     status: parsedContent.status,
@@ -941,28 +939,28 @@ async function parseJira(content: string) {
   return parsedInput.result[0];
 }
 
-async function addChild(parentIndex: number, document: any, projects: any) {
-  const childIndex = findChild(document.node_id, parentIndex, projects);
+async function addChild(parentIndex: number, pair: any, node_list: any) {
+  const childIndex = findChildIndex(pair.node_id, parentIndex, node_list);
 
   // child node was found to add to the items array
   if (childIndex != -1) {
-    // console.log("CHILD FOUND");
-    if (document.data_source == "jira") {
-      const jira = await getJiraContent(document);
-      projects[parentIndex].children[childIndex].items.push(jira);
+    console.log("CHILD FOUND");
+    if (pair.data_source == "jira") {
+      const jira = await getJiraContent(pair);
+      node_list[parentIndex].children[childIndex].items.push(jira);
     } else {
       const item: ItemNode = {
-        content: document.content,
-        content_type: document.content_type,
-        last_updated: document.last_updated,
-        source: document.data_source,
+        content: pair.content,
+        content_type: pair.content_type,
+        last_updated: pair.last_updated,
+        source: pair.data_source,
       };
 
-      projects[parentIndex].children[childIndex].items.push(item);
+      node_list[parentIndex].children[childIndex].items.push(item);
     }
     // console.log("CHILD FOUND");
     // console.log(
-    //   `ADDING ${item.id} TO ${projects[parentIndex].children[childIndex].child_id} IN ${projects[parentIndex].parent_id}`
+    //   `ADDING ${item.id} TO ${node_list[parentIndex].children[childIndex].child_id} IN ${node_list[parentIndex].parent_id}`
     // );
   }
 
@@ -970,59 +968,61 @@ async function addChild(parentIndex: number, document: any, projects: any) {
   else {
     // console.log("CHILD NOT FOUND, MAKING NEW CHILD NODE");
     const child: ChildNode = {
-      child_title: document.node_title,
-      child_id: document.node_id,
-      child_type: document.node_type,
-      child_url: document.url,
+      child_title: pair.node_title,
+      child_id: pair.node_id,
+      child_type: pair.node_type,
+      child_url: pair.url,
       items: [],
     };
 
-    if (document.data_source == "jira") {
-      // console.log("DOCUMENT IS FROM JIRA");
-      // console.log(`PARSING ${document.content}`);
-      const jira = await getJiraContent(document);
+    if (pair.data_source == "jira") {
+      // console.log("pair IS FROM JIRA");
+      // console.log(`PARSING ${pair.content}`);
+      const jira = await getJiraContent(pair);
       child.items.push(jira);
-      projects[parentIndex].children.push(child);
+      node_list[parentIndex].children.push(child);
     } else {
-      // console.log(`THIS IS FROM: ${document.data_source}`);
+      // console.log(`THIS IS FROM: ${pair.data_source}`);
       const item: ItemNode = {
-        content: document.content,
-        content_type: document.content_type,
-        last_updated: document.last_updated,
-        source: document.data_source,
+        content: pair.content,
+        content_type: pair.content_type,
+        last_updated: pair.last_updated,
+        source: pair.data_source,
       };
 
       child.items.push(item);
-      projects[parentIndex].children.push(child);
+      node_list[parentIndex].children.push(child);
     }
 
     // console.log("CHILD NOT FOUND");
     // console.log(`PARENT LOCATED AT ${parentIndex}`);
     // console.log(
-    //   `ADDING ${item.id} TO ${child.child_id} IN ${projects[parentIndex].parent_id}`
+    //   `ADDING ${item.id} TO ${child.child_id} IN ${node_list[parentIndex].parent_id}`
     // );
   }
 }
 // find parent node
-function findParent(parent_id: string, projects: any) {
-  const parent = projects.find((obj: any) => {
+function findParentIndex(parent_id: string, node_list: any) {
+  const parent = node_list.find((obj: any) => {
     return obj.parent_id == parent_id;
   });
-  return projects.indexOf(parent);
+  return node_list.indexOf(parent);
 }
 
-function findNode(node_id: string, projects: any) {
-  const node = projects.find((obj: any) => {
-    return obj.parent_id == node_id;
+function findNodeInList(node_id: string, node_list: any) {
+  const node = node_list.find(
+    (obj: any) => {
+    return obj.node_id == node_id;
   });
 
-  return projects.indexOf(node);
+  // Returns node object from list if exists, else -1
+  return node_list.indexOf(node);
 }
 
 // find child node
-function findChild(child_id: string, parentIndex: number, projects: any) {
+function findChildIndex(child_id: string, parentIndex: number, node_list: any) {
   let target: any = null;
-  projects.find((obj: any) => {
+  node_list.find((obj: any) => {
     if (obj.children) {
       const res = obj.children.find((child: any) => {
         if (child.child_id == child_id) {
@@ -1036,14 +1036,14 @@ function findChild(child_id: string, parentIndex: number, projects: any) {
     }
   });
 
-  return projects[parentIndex].children.indexOf(target);
+  return node_list[parentIndex].children.indexOf(target);
 }
 
 // find grandparent node
-function removeEmptyProjects(projects: any) {
-  // console.log("REMOVING EMPTY PROJECTS");
-  return projects.filter((project: ParentNode) => project.children.length > 0);
-}
+// function removeEmptynode_list(node_list: any) {
+//   // console.log("REMOVING EMPTY node_list");
+//   return node_list.filter((pair: Node) => pair.children.length > 0);
+// }
 
 function removeMember(target_id: string, members: Array<string>) {
   return members.filter((id: string) => id != target_id);

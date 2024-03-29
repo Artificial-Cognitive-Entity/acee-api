@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from "react";
 
 interface JiraContent {
@@ -70,7 +71,18 @@ const Sprint = ({ item, url }: { item: any; url: string }) => {
             </div>
           )}
 
-          {item.content_type != "code" && (
+          {item.content_type == "image" && (
+            <>
+              <img
+                      className="rounded-sm"
+                      alt="image from google bucket"
+                      src={item.content}
+                    />
+              <div>{`${item.content_type}`}</div>
+            </>
+          )}
+
+          {item.content_type == "text" && (
             <>
               <div>{`${item.content}`}</div>
               <div>{`${item.content_type}`}</div>

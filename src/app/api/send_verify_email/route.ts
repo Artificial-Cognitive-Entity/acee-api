@@ -44,8 +44,8 @@ export async function POST(req: Request) {
     //then the url takes the token and compares it in the database to find what users password to update
 
     //TODO: hash token?
-    const verificationLink = `http://localhost:3000/verify_email/?token=${body.token}`;
-
+    const verificationLink = `http://localhost:3000/verify_email?token=${body.token}`;
+    //
     try {
         await transporter.sendMail({
             from: process.env.EMAIL_USERNAME,
