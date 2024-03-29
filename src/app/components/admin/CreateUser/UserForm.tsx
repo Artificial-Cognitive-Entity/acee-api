@@ -12,7 +12,7 @@ AddRow: (user:any) => any
 user: User;
 }
 
-const UserForm = ({AddRow, user}: FormProps) => {
+const UserForm = (user: User) => {
   const [formData, setFormData] = useState<any>({
     fName: "",
     lName: "",

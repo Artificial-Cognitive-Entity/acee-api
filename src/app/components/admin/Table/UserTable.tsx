@@ -16,11 +16,7 @@ import AddUserIcon from "../CreateUser/AddUserIcon";
 import Button from "../../button";
 import useSWR from "swr";
 
-
 const UserTable = ({ toggleModal, loadingState }: TableProps) => {
-
-
-
   const {
     data: originalData,
     isValidating,
@@ -91,7 +87,6 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
         setInfo((old: any[]) =>
           old.filter((row: any, index: number) => index !== rowIndex)
         );
-
         const response = await fetch("/api/delete_user", {
           method: "DELETE",
           headers: {
@@ -99,7 +94,6 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
           },
           body: JSON.stringify(info[rowIndex]),
         });
-
         if (response.status == 200) {
           mutate("/api/get_group");
           return response.json();
@@ -154,9 +148,18 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
                         key={cell.id}
                         className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
+                        {cell.id == "edit" ? (
+                          <div onClick={() => toggleModal("CONFIRM")}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </div>
+                        ) : (
+                          flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )
                         )}
                       </td>
                     ))}

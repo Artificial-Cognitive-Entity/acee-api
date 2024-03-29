@@ -10,6 +10,7 @@ interface ModalProps {
 const Modal = ({ isOpen, type, user }: ModalProps) => {
   const [isDone, setIsDone] = useState(false);
 
+  console.log(isOpen)
   const closeModal = (element: HTMLDialogElement) => {
     element.close();
   };
