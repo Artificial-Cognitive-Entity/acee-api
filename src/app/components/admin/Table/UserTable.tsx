@@ -114,7 +114,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
         <div className="bg-black rounded-lg shadow-lg shrink-0 grow-0 basis-0">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-700">
             <div className="flex justify-center items-center">
-              <Button
+              <Button className=" border-purple-900 border-4"
                 onClick={() => {
                   toggleModal("CREATE");
                 }}
