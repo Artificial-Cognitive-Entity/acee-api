@@ -17,20 +17,21 @@ const Sidebar = (user: User) => {
   useEffect(() => {
     setRole(user.role);
   }, [user]);
+
   return (
     <>
       <label
         htmlFor="my-drawer-2"
         aria-label="close sidebar"
-        className="drawer-overlay bg-base-300"
+        className="drawer-overlay bg-black"
       ></label>
-      <ul className="menu p-4 w-45 h-full bg-base-300 text-base-content justify-around ">
+      <ul className="menu p-4 w-45 h-full bg-black text-white justify-around">
         {/* Sidebar content here */}
 
         {role == "Administrator" && (
           <li>
             <Link href="/dashboard" className="justify-center flex">
-              <FaUserGroup className="grow-0 shrink-0 basis-auto w-8 h-8" />
+              <FaUserGroup className="grow-0 shrink-0 basis-auto w-8 h-8 text-white" />
             </Link>
           </li>
         )}
@@ -46,11 +47,11 @@ const Sidebar = (user: User) => {
           </Link>
         </li>
         <li>
-          <ModeSwap/>
+          <ModeSwap />
         </li>
         <li>
           <button
-            className="justify-center flex"
+            className="justify-center flex text-white bg-purple-900 hover:bg-purple-700 px-4 py-2 rounded-md"
             onClick={() => {
               signOut({ redirect: false }).then(() => {
                 router.push("/"); // Redirect to the dashboard page after signing out

@@ -72,7 +72,7 @@ const SearchArea = () => {
         ></TextareaAutosize>
         <Button
           type="submit"
-          className="w-1/12 rounded-lg"
+          className="w-1/12 rounded-lg bg-purple-900 hover:bg-purple-700 text-white"
           onClick={handleAsked}
         >
           enter
