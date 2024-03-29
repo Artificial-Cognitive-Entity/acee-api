@@ -101,7 +101,7 @@ const AccordionRoot = ({ root }: { root: any }) => {
 
               {root.node_source == "google_drive" && (
                 <>
-                  <GoogleDrive className="w-94 h-94 inline-block align-middle"/>
+                  <GoogleDrive className="w-3 h-3 inline-block align-middle"/>
                   <p className="inline"> Google Drive</p>
                 </>
               )}
