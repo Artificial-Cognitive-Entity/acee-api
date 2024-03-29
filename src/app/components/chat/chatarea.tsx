@@ -175,7 +175,7 @@ function ChatMessage({
                 {content}
               </div>
             ) : (
-              <div className="prose chat-bubble chat-bubble-primary text-primary-content text-lg whitespace-normal rounded-lg">
+              <div className="prose chat-bubble chat-bubble-primary text-primary-content text-lg whitespace-pre-wrap rounded-lg">
                 <ChatBubble content={content}></ChatBubble>
               </div>
             )}
