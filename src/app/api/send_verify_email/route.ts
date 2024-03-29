@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
     //TODO: hash token?
     const verificationLink = `http://localhost:3000/verify_email?token=${body.token}`;
-
+    //
     try {
         await transporter.sendMail({
             from: process.env.EMAIL_USERNAME,
