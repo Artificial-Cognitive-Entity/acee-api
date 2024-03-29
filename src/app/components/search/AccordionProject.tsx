@@ -5,9 +5,42 @@ import { Confluence } from "@styled-icons/simple-icons";
 import { Dot } from "@styled-icons/bootstrap";
 import Boards from "./Board";
 import { ExternalLink } from "../ExternalLink";
+import { ExternalLinkNoArrow} from "../ExternalLinkNoArrow";
 import Image from "next/image";
 import openai from "@/app/lib/models/openai";
 import { ChatCompletionMessage } from "openai/resources/index.mjs";
+import { FolderFill } from '@styled-icons/bootstrap/FolderFill';
+
+
+// const ConfluenceIcon = () => {
+//   // Replace the path with the actual path to your icon
+//   return <img src="/path-to-your-confluence-icon.png" className="inline-block align-middle" alt="Confluence Icon" />;
+// };
+
+const capitalizeFirstLetter = (s:string) => {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+const toPercentage = (num:GLfloat) => {
+  return `${(num * 100).toFixed(2)}%`;
+};
+
+
+
+const convertToReadableDate = (dateString: string): string => {
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  
+  const dateObject = new Date(dateString);
+  dateObject.setHours(dateObject.getHours() - 5);
+  const day = dateObject.getDate();
+  const monthIndex = dateObject.getMonth();
+  const year = dateObject.getFullYear();
+  
+  return `${months[monthIndex]} ${day}, ${year}`;
+};
 
 
 const AccordionRoot = ({ root }: { root: any }) => {
@@ -31,8 +64,27 @@ const AccordionRoot = ({ root }: { root: any }) => {
                 </ExternalLink>
               </div>
             </div>
-            <div className="text-sm ml-4 mr-4">
-              <p>Last Updated: {root.last_updated}</p>
+            <div className="text-sm ml-4 mr-4 inline-block align-middle">
+              {/*Folder Icon*/}
+              <FolderFill className="w-3 h-3 inline-block align-middle"/>
+              <p className="inline"> </p>
+
+              {/*Parent Node Title/Link*/}
+              <div className="inline z-10 cursor-pointer"> 
+                <ExternalLinkNoArrow href={root.parent_node_url}>
+                  {root.parent_node_title}
+                </ExternalLinkNoArrow>
+              </div>
+
+              {/*Node Details*/}
+              <p className="inline"> • Updated {convertToReadableDate(root.last_updated)} • Confidence {toPercentage(root.score)} | </p>
+              {root.node_source == "jira" && (
+                <Jirasoftware className="w-3 h-3 inline-block align-middle"/>
+              )}
+              {root.node_source == "confluence" && (
+                <Confluence className="w-3 h-3 inline-block align-middle"/>
+              )}
+              <p className="inline"> {capitalizeFirstLetter(root.node_source)}</p>
             </div>
           </div>
         </div>

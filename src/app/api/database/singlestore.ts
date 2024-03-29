@@ -57,9 +57,12 @@ interface ChildNode {
 }
 
 interface NodeContentPair {
+  score: GLfloat;
   node_id: string;
   node_title: string;
   parent_id: string;
+  parent_node_title: string,
+  parent_node_url: string,
   node_type: string;
   url: string;
   content: string;
@@ -567,13 +570,13 @@ export async function findRelevantDocs({
     const embedQuery =
       "SELECT content_id, DOT_PRODUCT_F64(JSON_ARRAY_PACK_F64('[" +
       embedding +
-      "]'), embedding) AS score FROM embeddings ORDER BY score DESC";
+      "]'), embedding) AS score FROM embeddings ORDER BY score DESC LIMIT 3";
 
     const res: Array<ID> = await getIDs(conn, embedQuery, "chat");
     let array: Array<any> = [];
 
     for (let i = 0; i < res.length; i++) {
-      await groupResultByNode(array, conn, res[i]);
+      await fetchAndAddToNodeList(array, conn, res[i]);
     }
 
     // console.log(array);
@@ -632,7 +635,7 @@ export async function searchDatabase({
 
       if (res[i].score! > 0.65) {
         if (parsedInput.result[0].filter)
-          await groupResultByNode(
+          await fetchAndAddToNodeList(
             node_list,
             conn,
             res[i],
@@ -640,15 +643,39 @@ export async function searchDatabase({
             parsedInput.result[0].filter.type
           );
         else {
-          await groupResultByNode(node_list, conn, res[i], input!);
+          await fetchAndAddToNodeList(node_list, conn, res[i], input!);
         }
       }
     }
-    console.log("NODE LIST:\n")
-    console.log(node_list);
 
-    // console.log(JSON.stringify(node_list, null, 4));
-    return node_list;
+    // Sort node_list
+    node_list.sort((node_a: NodeContentPair, node_b: NodeContentPair) => node_b.score - node_a.score);
+
+    const filtered_node_ids:string[] = []
+    const filtered_nodes:NodeContentPair[] = []
+
+    // Grab unique nodes and highest ranking text content for preview
+    for (const node of node_list) {
+      if (!filtered_node_ids.includes(node.node_id) && node.content_type == "text") {
+        filtered_nodes.push(node);
+        filtered_node_ids.push(node.node_id);
+      } else if (filtered_node_ids.includes(node.node_id) && node.content_type == "text") {
+        const existingNode = filtered_nodes.find((n) => n.node_id === node.node_id);
+        if (existingNode) {
+          existingNode.content += node.content;
+        }
+      }
+    }
+
+    // Generate content previews
+    for (const node of filtered_nodes){
+      node.content_preview = await getPreview(input!, node)
+    }
+    
+    console.log(filtered_nodes)
+
+    return filtered_nodes;
+
   } catch (error) {
     console.log(error);
     return error;
@@ -699,126 +726,38 @@ export async function getPreview(query: string, result: any) {
 }
 
 // to group jira issues by project
-async function groupResultByNode(
+async function fetchAndAddToNodeList(
   node_list: any,
   conn: mysql.Connection,
   result: any,
   query?: string,
   filter?: string
 ) {
-  const pair = await getNodeContentPair(conn, result, "search", filter);
+  const pair = await getNodeContentPair(conn, result, "search", result.score, filter);
 
   if (pair == null) {
     return;
   }
 
-  const node_found_in_list = findNodeInList(pair.node_id, node_list);
+  const root: NodeContentPair = {
+            score: result.score,
+            node_id: pair.node_id,
+            node_title: pair.node_title,
+            parent_id: pair.node_id,
+            parent_node_title: pair.parent_node_title == "null" ? null : pair.parent_node_title,
+            parent_node_url: pair.parent_node_url == "null" ? null : pair.parent_node_url,
+            node_type: pair.node_type,
+            url: pair.url,
+            content: pair.content,
+            content_preview: "placeholder",
+            last_updated: pair.last_updated,
+            content_type: pair.content_type,
+            node_source: pair.data_source,
+            children_ids: pair.children_ids,
+            children: [],
+          };
+  node_list.push(root);
 
-  // Node not in list
-  if(node_found_in_list == -1) {
-
-    console.log("Node " + pair.node_id + "NOT FOUND IN LIST")
-    console.log(pair.node_id)
-    console.log(pair.children_ids)
-    console.log(pair.content)
-
-    // If a root - just add it
-    if (pair.parent_id == null) {
-      console.log("ADDING ROOT")
-      const root: NodeContentPair = {
-        node_id: pair.node_id,
-        node_title: pair.node_title,
-        parent_id: pair.node_id,
-        node_type: pair.node_type,
-        url: pair.url,
-        content: pair.content,
-        content_preview: await getPreview(query!, pair),
-        last_updated: pair.last_updated,
-        content_type: pair.content_type,
-        node_source: pair.data_source,
-        children_ids: pair.children_ids,
-        children: [],
-      };
-      node_list.push(root);
-    }
-  
-    // Non root - edit parent node, and add new child node
-    else {
-      const parentIndex = findParentIndex(pair.parent_id, node_list);
-      
-      // Parent found in list
-      if (parentIndex != -1 && pair.content_type != "title") {
-        console.log("EDITING parent " + pair.parent_id + " and adding child")
-        console.log("parent found")
-        const root: NodeContentPair = {
-          node_id: pair.node_id,
-          node_title: pair.node_title,
-          parent_id: pair.node_id,
-          node_type: pair.node_type,
-          url: pair.url,
-          content: pair.content,
-          content_preview: await getPreview(query!, pair),
-          last_updated: pair.last_updated,
-          content_type: pair.content_type,
-          node_source: pair.data_source,
-          children_ids: pair.children_ids,
-          children: [],
-        };
-        console.log("ADDING new node to list\n");
-        node_list.push(root);
-
-        await addChild(parentIndex, pair, node_list);
-
-      // Parent not found in list - query the db for it
-      } else { 
-
-        const parent = await getNode(conn, pair.parent_id);
-    
-        // get parent's content
-        const query = `
-            SELECT content, content_type FROM contents WHERE node_id = '${parent.node_id}'`;
-        const content = await getContent(conn, query);
-  
-        // const parent_obj: Node = {
-        //   node_title: parent.node_title,
-        //   parent_id: parent.node_id,
-        //   node_type: parent.node_type,
-        //   url: parent.url,
-        //   content: content.content,
-        //   content_type: content.content_type,
-        //   content_preview: await getPreview(query!, pair),
-        //   parent_source: parent.data_source,
-        //   children_ids: JSON.parse(parent.children_ids),
-        //   children: [],
-        // };
-
-        const parent_obj: NodeContentPair = {
-          node_id: pair.node_id,
-          node_title: parent.node_title,
-          parent_id: parent.parent_id,
-          node_type: parent.node_type,
-          url: parent.url,
-          content: content.content,
-          content_type: content.content_type,
-          content_preview: await getPreview(query!, pair),
-          last_updated: parent.last_updated,
-          node_source: parent.data_source,
-          children_ids: JSON.parse(parent.children_ids),
-          children: [],
-        };
-  
-        node_list.push(parent_obj);
-  
-        const parent_index = findParentIndex(parent_obj.parent_id, node_list);
-  
-        await addChild(parent_index, pair, node_list);
-      }
-    }
-  
-  } else {
-    console.log("Node " + pair.node_id + " IS FOUND IN LIST")
-
-  }
 }
 
 //get and format doc into json
@@ -826,6 +765,7 @@ async function getNodeContentPair(
   conn: mysql.Connection,
   result: any,
   type: string,
+  score: GLfloat,
   filter?: string
 ) {
   let query;
@@ -844,6 +784,13 @@ async function getNodeContentPair(
 
   let content: any = await getContent(conn, query);
   let node: any = await getNode(conn, node_id);
+  // let parent:any = await getNode(conn, node.parent_id);
+  let parent: any = node && node.parent_id !== "null" ? await getNode(conn, node.parent_id) : null;
+
+  if (!node) {
+    console.error(`No node found for node_id: ${node_id}`);
+    return;
+  }
 
   if (content == null) {
     return;
@@ -853,8 +800,17 @@ async function getNodeContentPair(
   //   `\nNODE TITLE: ${node.node_title}\nDATA SOURCE: ${node.data_source}\nPARENT_ID: ${node.parent_id}\nNODE_ID:${node.node_id} `
   // );
 
+  let parent_node_title = null;
+  let parent_node_url = null;
+
+  if (parent) {
+    parent_node_title = parent.node_title;
+    parent_node_url = parent.url;
+  }
+
   if (type == "search") {
     return {
+      score: score,
       node_title: node.node_title,
       node_id: node_id,
       node_type: node.node_type,
@@ -865,10 +821,13 @@ async function getNodeContentPair(
       last_updated: node.last_updated,
       parent_id: node.parent_id == "null" ? null : node.parent_id,
       children_ids: JSON.parse(node.children_ids),
+      parent_node_title: parent_node_title,
+      parent_node_url: parent_node_url
     };
   }
 
   return {
+    score: score,
     node_title: node.node_title,
     node_type: node.node_type,
     content: content.content,
@@ -876,7 +835,9 @@ async function getNodeContentPair(
     url: node.url,
     data_source: node.data_source,
     last_updated: node.last_updated,
-    parent_id: node.parent_id == "null" ? null : node.parent_id,
+    parent_id: parent ? null : node.parent_id,
+    parent_node_title: parent_node_title,
+    parent_node_url: parent_node_url
   };
 }
 
