@@ -34,7 +34,7 @@ export async function POST(req: Request) {
         if (typeof token == "string") {
           const email = userData.email;
           const emailRes = await fetch(
-            "http://localhost:3000/api/send_verify_email",
+            `${process.env.ACEE_URL}/api/send_verify_email`,
             {
               method: "POST",
               headers: {

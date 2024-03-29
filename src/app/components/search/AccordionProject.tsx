@@ -86,17 +86,25 @@ const AccordionRoot = ({ root }: { root: any }) => {
               {/*Node Details*/}
               <p className="inline"> • Updated {convertToReadableDate(root.last_updated)} • Confidence {toPercentage(root.score)} | </p>
               {root.node_source == "jira" && (
-                <Jirasoftware className="w-3 h-3 inline-block align-middle"/>
-              ) && <p className="inline"> Jira</p>}
+                <>
+                  <Jirasoftware className="w-3 h-3 inline-block align-middle"/>
+                  <p className="inline"> Jira</p>
+                </>
+              )}
 
               {root.node_source == "confluence" && (
-                <Confluence className="w-3 h-3 inline-block align-middle"/>
-             && <p className="inline"> Confluence</p>)}
+                <>
+                  <Confluence className="w-3 h-3 inline-block align-middle"/>
+                  <p className="inline"> Confluence</p>
+                </>
+              )}
 
               {root.node_source == "google_drive" && (
-                <div className="w-3 h-3 inline-block align-middle"><DriveIcon/></div>
-                // <GoogleDrive className="w-94 h-94 inline-block align-middle"/>)
-               && <p className="inline"> Google Drive</p>)}
+                <>
+                  <GoogleDrive className="w-3 h-3 inline-block align-middle"/>
+                  <p className="inline"> Google Drive</p>
+                </>
+              )}
                
             </div>
           </div>
