@@ -14,9 +14,21 @@ import {
 import { columns } from "@/app/components/admin/Table/columns";
 import AddUserIcon from "../CreateUser/AddUserIcon";
 import Button from "../../button";
+import useSWR from "swr";
+
 
 const UserTable = ({ toggleModal, loadingState }: TableProps) => {
-  const { data: originalData, isValidating, error } = useSWRImmutable("/api/get_group", {revalidateOnFocus: false, refreshInterval: 3000});
+
+
+
+  const {
+    data: originalData,
+    isValidating,
+    error,
+    mutate,
+  } = useSWR("/api/get_group", {
+    revalidateOnFocus: false,
+  });
 
   const [editedRows, setEditedRows] = useState({});
   const [info, setInfo] = useState<any>([]);
@@ -66,7 +78,20 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
       },
       editedRows,
       setEditedRows,
+      deleteRow: (rowIndex: number) => {
+        setInfo((old: any[]) =>
+          old.filter((row: any, index: number) => index !== rowIndex)
+        );
+
+        const updatedEditedRows: any = { ...editedRows };
+        delete updatedEditedRows[rowIndex];
+        setEditedRows(updatedEditedRows);
+      },
       removeRow: async (rowIndex: number) => {
+        setInfo((old: any[]) =>
+          old.filter((row: any, index: number) => index !== rowIndex)
+        );
+
         const response = await fetch("/api/delete_user", {
           method: "DELETE",
           headers: {
@@ -74,7 +99,14 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
           },
           body: JSON.stringify(info[rowIndex]),
         });
-        return response.json();
+
+        if (response.status == 200) {
+          mutate("/api/get_group");
+          return response.json();
+        } else {
+          setInfo((old: any[]) => [...old]);
+          setEditedRows({ ...editedRows });
+        }
       },
     },
   });

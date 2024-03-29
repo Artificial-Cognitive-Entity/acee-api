@@ -16,7 +16,10 @@ export const columns = [
   }),
   columnHelper.accessor("email", {
     header: () => "Email",
-    cell: (info) => info.getValue(),
+    cell: EditableCell,
+    meta:{
+      type:"email"
+    }
   }),
   columnHelper.accessor("role", {
     header: () => "Role",
