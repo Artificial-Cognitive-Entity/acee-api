@@ -1,10 +1,10 @@
 'use client'
 import React from 'react'
-import { Pencil } from '@styled-icons/bootstrap'
+import { Edit } from '@styled-icons/fluentui-system-filled'
 
 const EditIcon = () => {
   return (
-    <div><Pencil size="36"></Pencil></div>
+    <div><Edit className='w-6 h-6'></Edit></div>
   )
 }
 

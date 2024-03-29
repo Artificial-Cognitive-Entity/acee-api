@@ -58,11 +58,9 @@ const DashArea = (user: User) => {
               Manage your group below
             </div>
 
-            <div className="w-5/6 overflow-y-auto rounded-md">
+            <div className="overflow-y-auto rounded-md w-11/12">
               <div className="w-full">
-                <div className="bg-base-300 rounded-b-md overflow-y-auto min-h-80">
-                  {loading && <Loader></Loader>}
-
+                <div className={loading ? 'skeleton rounded-b-md overflow-y-auto min-h-80 w-full' : 'bg-base-300 rounded-b-md overflow-y-auto min-h-80 w-full'}>
                   {user && (
                     <SWRConfig value={{ fetcher }}>
                       <UserTable

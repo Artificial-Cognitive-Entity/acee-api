@@ -581,6 +581,34 @@ export async function findRelevantDocs({
       await fetchAndAddToNodeList(array, conn, res[i]);
     }
 
+    // Sort node_list
+    array.sort((node_a: NodeContentPair, node_b: NodeContentPair) => node_b.score - node_a.score);
+
+    const filtered_node_ids:string[] = []
+    const filtered_nodes:NodeContentPair[] = []
+
+    // Grab unique nodes and highest ranking text content for preview
+    for (const node of array) {
+      if (!filtered_node_ids.includes(node.node_id) && node.content_type == "text") {
+        filtered_nodes.push(node);
+        filtered_node_ids.push(node.node_id);
+      } else if (filtered_node_ids.includes(node.node_id) && node.content_type == "text") {
+        const existingNode = filtered_nodes.find((n) => n.node_id === node.node_id);
+        if (existingNode) {
+          existingNode.content += node.content;
+        }
+      }
+    }
+
+    // Generate content previews
+    for (const node of filtered_nodes){
+      node.content_preview = await getPreview("", node)
+    }
+    
+    console.log(filtered_nodes)
+
+    return filtered_nodes;
+
     // console.log(array);
     return array;
   } catch (error) {
