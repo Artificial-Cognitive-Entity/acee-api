@@ -1,6 +1,9 @@
 import React from "react";
 import Button from "../../button";
 import EditIcon from "./EditIcon";
+import TrashIcon from "../../chat/trash";
+import RevertIcon from "./RevertIcon";
+import AcceptIcon from "./AcceptIcon";
 
 interface CellProps {
   row: any;
@@ -25,24 +28,25 @@ const EditControls = ({ row, table }: CellProps) => {
   };
 
   const removeRow = () => {
+    meta?.deleteRow(row.index);
     meta?.removeRow(row.index);
   };
-  
+
   return meta?.editedRows[row.id] ? (
     <div className="flex justify-center gap-3">
+      <Button className="text-white" name="done" onClick={setEditedRows}>
+        <AcceptIcon></AcceptIcon>
+      </Button>
       <Button
         type="button"
-        className="text-red-900"
+        className="text-white"
         name="cancel"
         onClick={setEditedRows}
       >
-        X
+        <RevertIcon />
       </Button>
-      <Button className="text-purple-900" name="done" onClick={setEditedRows}>
-        ✔
-      </Button>
-      <Button className="text-red-900" name="delete" onClick={removeRow}>
-        delete
+      <Button className="text-white" name="delete" onClick={removeRow}>
+        <TrashIcon />
       </Button>
     </div>
   ) : (

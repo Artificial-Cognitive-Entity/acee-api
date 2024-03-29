@@ -14,7 +14,7 @@ const Button = ({ onClick, type, className = "", children, name }: Props) => {
   return (
     <button
       type={type}
-      className={cn("btn btn-active rounded-md", className)}
+      className={cn("btn btn-active rounded-md bg-black hover:bg-purple-600", className)}
       name={name}
       onClick={onClick}
     >
