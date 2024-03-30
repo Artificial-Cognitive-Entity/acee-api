@@ -42,26 +42,6 @@ ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
 ENV EMAIL_USERNAME=${EMAIL_USERNAME}
 ENV EMAIL_PASSWORD=${EMAIL_PASSWORD}
 
-# Add echo statements to debug environment variables
-RUN echo "DEBUG: Environment variables are set as follows:"
-RUN echo "OPENAI_MODEL: ${OPENAI_MODEL}"
-RUN echo "OPENAI_API_KEY: ${OPENAI_API_KEY}"
-RUN echo "HOST: ${HOST}"
-RUN echo "SINGLESTORE_USER: ${SINGLESTORE_USER}"
-RUN echo "PASSWORD: ${PASSWORD}"
-RUN echo "DATABASE: ${DATABASE}"
-RUN echo "PROJECT: ${PROJECT}"
-RUN echo "LOCATION: ${LOCATION}"
-RUN echo "ENDPOINT: ${ENDPOINT}"
-RUN echo "MODEL: ${MODEL}"
-RUN echo "PUBLISHER: ${PUBLISHER}"
-RUN echo "JWT_SECRET: ${JWT_SECRET}"
-RUN echo "NEXTAUTH_URL: ${NEXTAUTH_URL}"
-RUN echo "ACEE_URL: ${ACEE_URL}"
-RUN echo "NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}"
-RUN echo "EMAIL_USERNAME: ${EMAIL_USERNAME}"
-RUN echo "EMAIL_PASSWORD: ${EMAIL_PASSWORD}"
-
 # Copy package.json and package-lock.json to the container  
 COPY package*.json ./  
 COPY next.config.js tsconfig.json ./
