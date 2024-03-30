@@ -14,6 +14,8 @@ const PASSWORD = process.env.PASSWORD;
 const USER = process.env.SINGLESTORE_USER;
 const DATABASE = process.env.DATABASE;
 
+console.log(HOST)
+
 interface ItemNode {
   content?: string;
   content_type: string;
