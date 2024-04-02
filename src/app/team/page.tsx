@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import DriveIconImage from "@/app/images/driveicon.png";
-import joshImage from "@/app/images/josh_lego_pfp.jpg";
-import mihirImage from "@/app/images/mihir_lego_pfp.jpg";
-import kaylaImage from"@/app/images/kaya_lego_pfp.jpg";
-import celinaImage from "@/app/images/celina_lego_pfp.jpg";
-import nickImage from "@/app/images/nick_lego_pfp.jpg";
+import joshImage from "@/app/images/josh-image.png";
+import mihirImage from "@/app/images/mihir-image.jpg";
+import kaylaImage from"@/app/images/kayla-image.png";
+import celinaImage from "@/app/images/celina-image.png";
+import nickImage from "@/app/images/nick-image.png";
 const TeamPage = () => {
   const teamMembers = [
     {
@@ -54,7 +54,7 @@ return (
             <li key={member.name} className="rounded-lg bg-purple-900 p-6">
               <div className="relative">
                 <img
-                  className="aspect-[3/2] w-full rounded-lg object-cover transition duration-300 ease-in-out hover:scale-110"
+                  className="aspect-[3/3] w-full rounded-lg object-cover transition duration-300 ease-in-out hover:scale-110"
                   src={member.image}
                   alt={member.name}
                 />
