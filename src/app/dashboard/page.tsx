@@ -11,7 +11,7 @@ const Dashboard = async () => {
 
   // redirect to login
   if (!session) {
-    redirect("/api/auth/signin?callbackUrl=/chat");
+    redirect("/api/auth/signin?callbackUrl=/dashboard");
   }
   //
   return (
