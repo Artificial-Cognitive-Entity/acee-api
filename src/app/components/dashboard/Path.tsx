@@ -4,6 +4,7 @@ import React from "react";
 import DashArea from "../admin/DashArea";
 import ChatArea from "../chat/chatarea";
 import SearchArea from "../search/SearchArea";
+import NoAccess from './NoAccess'
 import type { User } from "next-auth";
 import { useSession } from "next-auth/react";
 
@@ -27,7 +28,7 @@ const Path = (user: User) => {
             )}
 
           {pathName === "/dashboard" && user.role != "Administrator" && (
-            <h1>you do not have access to this page. not an admin</h1>
+            <NoAccess></NoAccess>
           )}
         </div>
       ) : (
