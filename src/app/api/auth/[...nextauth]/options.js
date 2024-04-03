@@ -70,5 +70,6 @@ export const options = {
   pages: {
     signIn: "/login", // Optional: specify a custom sign-in page
     redirect: "/dashboard", // Redirect to /dashboard after successful sign-in
+    error: "/error"
   },
 };
