@@ -8,8 +8,9 @@ export async function GET() {
 
     const session = await getServerSession(options)
     const admin_group: string = session!.user.group
+    const admin_id: string = session!.user.id
 
-    const group = await getGroupMembers({ admin_group });
+    const group = await getGroupMembers({ admin_group, admin_id });
     
     if(!group)
     {
