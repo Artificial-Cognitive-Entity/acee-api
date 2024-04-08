@@ -52,8 +52,8 @@ export default function StatusOptions({ row, header, value }: CellProp) {
 
   console.log(row);
   return (
-    <div className="">
-      <Menu>
+    <div className="relative z-10" >
+      <Menu as="div">
         <Menu.Button className="text-lg text-center bg-transparent w-full rounded-lg over-hidden whitespace-nowrap text-ellipsis">
           {value}
         </Menu.Button>
@@ -66,9 +66,9 @@ export default function StatusOptions({ row, header, value }: CellProp) {
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items as="div" className=" absolute origin-top-right divide-y ">
+          <Menu.Items as="div" className="relative">
             <div className="px-1 py-1">
-              <Menu.Item as="div">
+              <Menu.Item as="div" className="absolute">
                 {value == "Locked" && (
                   <button className="btn btn-active rounded-md  bg-black  hover:bg-purple-600">
                     Unlock User
@@ -77,7 +77,7 @@ export default function StatusOptions({ row, header, value }: CellProp) {
                 {value == "Unverified" && (
                   <button
                     onClick={handleClick}
-                    className="btn btn-active rounded-md z-30  bg-black  hover:bg-purple-600"
+                    className="btn btn-active rounded-md z-60  bg-black  hover:bg-purple-600"
                   >
                     Resend Email
                   </button>

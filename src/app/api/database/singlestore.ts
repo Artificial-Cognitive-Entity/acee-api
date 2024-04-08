@@ -14,8 +14,6 @@ const PASSWORD = process.env.PASSWORD;
 const USER = process.env.SINGLESTORE_USER;
 const DATABASE = process.env.DATABASE;
 
-console.log(HOST)
-
 interface ItemNode {
   content?: string;
   content_type: string;
@@ -64,8 +62,8 @@ interface NodeContentPair {
   node_id: string;
   node_title: string;
   parent_id: string;
-  parent_node_title: string,
-  parent_node_url: string,
+  parent_node_title: string;
+  parent_node_url: string;
   node_type: string;
   url: string;
   content: string;
@@ -422,10 +420,8 @@ export async function addUser(
 
     if (result) {
       return token;
-    } 
-
-    else{
-      return null
+    } else {
+      return null;
     }
   } catch (error) {
     console.log(error);
@@ -439,9 +435,11 @@ export async function addUser(
 
 export async function getGroupMembers({
   admin_group,
+  admin_id,
   conn,
 }: {
   admin_group: string;
+  admin_id: string;
   conn?: mysql.Connection;
 }) {
   try {
@@ -460,10 +458,14 @@ export async function getGroupMembers({
 
     let group: Array<GroupMember> = [];
     for (let i = 0; i < members.length; i++) {
-      query = `SELECT user_id, first_name, last_name, email, status, role, token FROM users WHERE user_id = '${members[i]}'`;
-      result = await conn.query(query);
+      if (members[i] != admin_id) {
+        query = `SELECT user_id, first_name, last_name, email, status, role, token FROM users WHERE user_id = '${members[i]}'`;
+        result = await conn.query(query);
 
-      group.push(result[0][0]);
+        group.push(result[0][0]);
+      } else {
+        continue;
+      }
     }
 
     return group;
@@ -584,18 +586,29 @@ export async function findRelevantDocs({
     }
 
     // Sort node_list
-    array.sort((node_a: NodeContentPair, node_b: NodeContentPair) => node_b.score - node_a.score);
+    array.sort(
+      (node_a: NodeContentPair, node_b: NodeContentPair) =>
+        node_b.score - node_a.score
+    );
 
-    const filtered_node_ids:string[] = []
-    const filtered_nodes:NodeContentPair[] = []
+    const filtered_node_ids: string[] = [];
+    const filtered_nodes: NodeContentPair[] = [];
 
     // Grab unique nodes and highest ranking text content for preview
     for (const node of array) {
-      if (!filtered_node_ids.includes(node.node_id) && node.content_type == "text") {
+      if (
+        !filtered_node_ids.includes(node.node_id) &&
+        node.content_type == "text"
+      ) {
         filtered_nodes.push(node);
         filtered_node_ids.push(node.node_id);
-      } else if (filtered_node_ids.includes(node.node_id) && node.content_type == "text") {
-        const existingNode = filtered_nodes.find((n) => n.node_id === node.node_id);
+      } else if (
+        filtered_node_ids.includes(node.node_id) &&
+        node.content_type == "text"
+      ) {
+        const existingNode = filtered_nodes.find(
+          (n) => n.node_id === node.node_id
+        );
         if (existingNode) {
           existingNode.content += node.content;
         }
@@ -603,11 +616,11 @@ export async function findRelevantDocs({
     }
 
     // Generate content previews
-    for (const node of filtered_nodes){
-      node.content_preview = await getPreview("", node)
+    for (const node of filtered_nodes) {
+      node.content_preview = await getPreview("", node);
     }
-    
-    console.log(filtered_nodes)
+
+    console.log(filtered_nodes);
 
     return filtered_nodes;
 
@@ -658,12 +671,12 @@ export async function searchDatabase({
     let node_list: any = [];
 
     for (let i = 0; i < res.length; i++) {
-      console.log("\nResult:")
+      console.log("\nResult:");
       console.log(res[i].score);
       console.log(res[i].content_id);
 
-      console.log("Res: " + res[i].content_id)
-      console.log("Node list: " + JSON.stringify(node_list))
+      console.log("Res: " + res[i].content_id);
+      console.log("Node list: " + JSON.stringify(node_list));
 
       if (res[i].score! > 0.65) {
         if (parsedInput.result[0].filter)
@@ -681,18 +694,29 @@ export async function searchDatabase({
     }
 
     // Sort node_list
-    node_list.sort((node_a: NodeContentPair, node_b: NodeContentPair) => node_b.score - node_a.score);
+    node_list.sort(
+      (node_a: NodeContentPair, node_b: NodeContentPair) =>
+        node_b.score - node_a.score
+    );
 
-    const filtered_node_ids:string[] = []
-    const filtered_nodes:NodeContentPair[] = []
+    const filtered_node_ids: string[] = [];
+    const filtered_nodes: NodeContentPair[] = [];
 
     // Grab unique nodes and highest ranking text content for preview
     for (const node of node_list) {
-      if (!filtered_node_ids.includes(node.node_id) && node.content_type == "text") {
+      if (
+        !filtered_node_ids.includes(node.node_id) &&
+        node.content_type == "text"
+      ) {
         filtered_nodes.push(node);
         filtered_node_ids.push(node.node_id);
-      } else if (filtered_node_ids.includes(node.node_id) && node.content_type == "text") {
-        const existingNode = filtered_nodes.find((n) => n.node_id === node.node_id);
+      } else if (
+        filtered_node_ids.includes(node.node_id) &&
+        node.content_type == "text"
+      ) {
+        const existingNode = filtered_nodes.find(
+          (n) => n.node_id === node.node_id
+        );
         if (existingNode) {
           existingNode.content += node.content;
         }
@@ -700,14 +724,13 @@ export async function searchDatabase({
     }
 
     // Generate content previews
-    for (const node of filtered_nodes){
-      node.content_preview = await getPreview(input!, node)
+    for (const node of filtered_nodes) {
+      node.content_preview = await getPreview(input!, node);
     }
-    
-    console.log(filtered_nodes)
+
+    console.log(filtered_nodes);
 
     return filtered_nodes;
-
   } catch (error) {
     console.log(error);
     return error;
@@ -752,8 +775,8 @@ export async function getPreview(query: string, result: any) {
     } else {
       return "No Preview";
     }
-  } else { 
-    return ""
+  } else {
+    return "";
   }
 }
 
@@ -765,32 +788,39 @@ async function fetchAndAddToNodeList(
   query?: string,
   filter?: string
 ) {
-  console.log("NODE ID : " + result.node_id)
-  const pair = await getNodeContentPair(conn, result, "search", result.score, filter);
+  console.log("NODE ID : " + result.node_id);
+  const pair = await getNodeContentPair(
+    conn,
+    result,
+    "search",
+    result.score,
+    filter
+  );
 
   if (pair == null) {
     return;
   }
 
   const root: NodeContentPair = {
-            score: result.score,
-            node_id: pair.node_id,
-            node_title: pair.node_title,
-            parent_id: pair.node_id,
-            parent_node_title: pair.parent_node_title == "null" ? null : pair.parent_node_title,
-            parent_node_url: pair.parent_node_url == "null" ? null : pair.parent_node_url,
-            node_type: pair.node_type,
-            url: pair.url,
-            content: pair.content,
-            content_preview: "placeholder",
-            last_updated: pair.last_updated,
-            content_type: pair.content_type,
-            node_source: pair.data_source,
-            children_ids: pair.children_ids,
-            children: [],
-          };
+    score: result.score,
+    node_id: pair.node_id,
+    node_title: pair.node_title,
+    parent_id: pair.node_id,
+    parent_node_title:
+      pair.parent_node_title == "null" ? null : pair.parent_node_title,
+    parent_node_url:
+      pair.parent_node_url == "null" ? null : pair.parent_node_url,
+    node_type: pair.node_type,
+    url: pair.url,
+    content: pair.content,
+    content_preview: "placeholder",
+    last_updated: pair.last_updated,
+    content_type: pair.content_type,
+    node_source: pair.data_source,
+    children_ids: pair.children_ids,
+    children: [],
+  };
   node_list.push(root);
-
 }
 
 //get and format doc into json
@@ -818,7 +848,10 @@ async function getNodeContentPair(
   let node_id: any = await getNodeId(conn, content_id);
   let node: any = await getNode(conn, node_id);
   // let parent:any = await getNode(conn, node.parent_id);
-  let parent: any = node && node.parent_id !== "null" ? await getNode(conn, node.parent_id) : null;
+  let parent: any =
+    node && node.parent_id !== "null"
+      ? await getNode(conn, node.parent_id)
+      : null;
 
   if (!node) {
     console.error(`No node found for node_id: ${node_id}`);
@@ -855,7 +888,7 @@ async function getNodeContentPair(
       parent_id: node.parent_id == "null" ? null : node.parent_id,
       children_ids: JSON.parse(node.children_ids),
       parent_node_title: parent_node_title,
-      parent_node_url: parent_node_url
+      parent_node_url: parent_node_url,
     };
   }
 
@@ -870,7 +903,7 @@ async function getNodeContentPair(
     last_updated: node.last_updated,
     parent_id: parent ? null : node.parent_id,
     parent_node_title: parent_node_title,
-    parent_node_url: parent_node_url
+    parent_node_url: parent_node_url,
   };
 }
 
@@ -892,8 +925,8 @@ async function getNodeId(conn: mysql.Connection, content_id: string) {
   SELECT distinct node_id FROM contents WHERE content_id = '${content_id}'
   `;
   const result: any = await conn.query(query);
-  console.log(JSON.stringify(result))
-  return result[0][0].node_id
+  console.log(JSON.stringify(result));
+  return result[0][0].node_id;
 }
 
 //utility functions
@@ -1040,8 +1073,7 @@ function findParentIndex(parent_id: string, node_list: any) {
 }
 
 function findNodeInList(node_id: string, node_list: any) {
-  const node = node_list.find(
-    (obj: any) => {
+  const node = node_list.find((obj: any) => {
     return obj.node_id == node_id;
   });
 
