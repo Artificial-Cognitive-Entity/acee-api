@@ -18,7 +18,7 @@ const Login = () => {
       // Display notification informing the user to log in
       setAlert(true);
     }
-  }, []);
+  }, [searchParams]);
 
   return (
     <>
