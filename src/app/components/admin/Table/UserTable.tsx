@@ -3,8 +3,8 @@ interface TableProps {
   loadingState: (status: boolean) => void;
 }
 
+import { Error } from "../CreateUser/Alerts";
 import React, { useEffect, useState } from "react";
-import useSWRImmutable from "swr";
 import {
   flexRender,
   getCoreRowModel,
@@ -20,7 +20,6 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
   const {
     data: originalData,
     isValidating,
-    error,
     mutate,
   } = useSWR("/api/get_group", {
     revalidateOnFocus: false,
@@ -28,6 +27,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
 
   const [editedRows, setEditedRows] = useState({});
   const [info, setInfo] = useState<any>([]);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (isValidating) {
@@ -35,11 +35,16 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
       return;
     } else {
       loadingState(isValidating);
-      setInfo(() => {
-        return [...originalData];
-      });
+
+      if (typeof originalData[Symbol.iterator] === "function") {
+        setInfo(() => {
+          return [...originalData];
+        });
+      } else {
+        setError(true);
+      }
     }
-  }, [isValidating, originalData]);
+  }, [isValidating, loadingState, originalData]);
 
   const table = useReactTable({
     data: info,
@@ -111,10 +116,11 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
   return (
     <>
       {originalData && (
-        <div className="bg-black rounded-lg shadow-lg shrink-0 grow-0 basis-0">
+        <div className="bg-black rounded-lg shadow-lg shrink-0 grow-0 basis-0 z-10">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-700">
             <div className="flex justify-center items-center">
-              <Button className=" border-purple-900 border-4"
+              <Button
+                className=" border-purple-900 border-4"
                 onClick={() => {
                   toggleModal("CREATE");
                 }}
@@ -123,7 +129,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
               </Button>
             </div>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden">
             <table className="min-w-full divide-y divide-gray-700 text-center w-full">
               <thead className="bg-gray-800">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -143,26 +149,37 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
                   </tr>
                 ))}
               </thead>
-              <tbody className="bg-gray-900 divide-y divide-gray-700">
-                {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
+
+              {!error ? (
+                <tbody className="bg-gray-900 divide-y divide-gray-700">
+                  {table.getRowModel().rows.map((row) => (
+                    <tr key={row.id}>
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white relative"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              ) : (
+                <></>
+              )}
             </table>
           </div>
         </div>
+      )}
+
+      {error && (
+        <Error>
+          Uh oh, we can not fetch groups right now. Please try again later.
+        </Error>
       )}
     </>
   );

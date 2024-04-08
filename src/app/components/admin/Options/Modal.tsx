@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import UserForm from "../CreateUser/UserForm";
-import type { User } from "next-auth"; 
+import type { User } from "next-auth";
 interface ModalProps {
   isOpen: boolean;
   type: string;
-  user: User
+  user: User;
 }
 
 const Modal = ({ isOpen, type, user }: ModalProps) => {
   const [isDone, setIsDone] = useState(false);
 
-  console.log(isOpen)
+  console.log(isOpen);
   const closeModal = (element: HTMLDialogElement) => {
     element.close();
   };
@@ -43,8 +43,8 @@ const Modal = ({ isOpen, type, user }: ModalProps) => {
     return (
       <>
         <dialog id="adminModal" className="modal self-center">
-        <div className="modal-box flex justify-center rounded-lg">
-           Changes have been made
+          <div className="modal-box flex justify-center rounded-lg">
+            Changes have been made
           </div>
           <form method="dialog" className="modal-backdrop w-full">
             <button>close</button>
@@ -59,10 +59,22 @@ const Modal = ({ isOpen, type, user }: ModalProps) => {
       <>
         <dialog id="createModal" className="modal self-center">
           <div className="modal-box flex justify-center rounded-lg">
-            <UserForm role={user.role} id={user.id} group={user.group} email={user.email}></UserForm>
+            <UserForm
+              role={user.role}
+              id={user.id}
+              group={user.group}
+              email={user.email}
+            ></UserForm>
           </div>
           <form method="dialog" className="modal-backdrop">
-            <button>close</button>
+            <button
+              onClick={() => {
+                isOpen = false;
+                console.log(isOpen)
+              }}
+            >
+              close
+            </button>
           </form>
         </dialog>
       </>
