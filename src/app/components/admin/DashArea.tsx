@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import UserTable from "./Table/UserTable";
 import Modal from "./Options/Modal";
-import Button from "../button";
-import AddUserIcon from "./CreateUser/AddUserIcon";
 import { SWRConfig } from "swr";
-import Loader from "@/app/lib/loader";
 import {type User } from "next-auth";
 
 type MODALS = "CLOSED" | "CREATE" | "CONFIRM";
