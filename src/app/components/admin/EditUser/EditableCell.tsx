@@ -49,7 +49,7 @@ const EditableCell: React.FC<CellProp> = ({ getValue, row, column, table }) => {
         </select>
       ) : columnMeta?.type === "action" ? (
         <>
-          <div className="border-purple-600 border-2 rounded-lg">
+          <div className="border-purple-600 border-2 rounded-lg relative">
             <StatusOptions
               row={table.getRow(row.index).original}
               header=""
