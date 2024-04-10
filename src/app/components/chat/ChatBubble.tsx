@@ -2,7 +2,7 @@
 import React from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import Linkify from "react-linkify";
+import Linkify from "linkify-react";
 
 const ChatBubble = ({ content }: { content: string }) => {
   // Function to identify code blocks and wrap them in <code> and <pre> tags
@@ -27,8 +27,10 @@ const ChatBubble = ({ content }: { content: string }) => {
 
       // even indexes represent non-code content
       return (
-        <div key={index}>
-          <Linkify>{block}</Linkify>
+        <div  className="max-w-[95%] break-words" key={index}>
+        
+            <Linkify options={{ target: "_blank" }}>{block}</Linkify>
+
         </div>
       );
     });
