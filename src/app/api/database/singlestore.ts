@@ -59,16 +59,16 @@ interface ChildNode {
 
 interface NodeContentPair {
   score: GLfloat;
-  node_id: string;
+  node_id?: string;
   node_title: string;
-  parent_id: string;
+  parent_id?: string;
   parent_node_title: string;
   parent_node_url: string;
   node_type: string;
   url: string;
   content: string;
   content_type: string;
-  content_preview: string;
+  content_preview?: string;
   last_updated: string;
   node_source: string;
   children_ids: Array<string>;
@@ -492,7 +492,7 @@ export async function addGroupMember({
     let query = `SELECT members FROM groups WHERE group_title = '${admin_group}'`;
     let result: any = await conn.query(query);
 
-    console.log(result[0][0].members.members);
+    // console.log(result[0][0].members.members);
     let members = result[0][0].members.members;
 
     // add new user to the members object
@@ -534,10 +534,10 @@ async function UpdateGroup({
 
     let members = result[0][0].members.members;
 
-    console.log("BEFORE", members);
+    // console.log("BEFORE", members);
     members = await removeMember(target_id, members);
 
-    console.log("after", members);
+    // console.log("after", members);
 
     const updatedMembers = {
       members: members,
@@ -549,12 +549,13 @@ async function UpdateGroup({
 
     result = await conn.query(query);
 
-    console.log(result);
+    // console.log(result);
   } catch (error) {
     console.log(error);
     return error;
   }
 }
+
 //finds the most relevant pair to the user's query
 // used for chatting
 export async function findRelevantDocs({
@@ -579,10 +580,11 @@ export async function findRelevantDocs({
       "]'), embedding) AS score FROM embeddings ORDER BY score DESC LIMIT 3";
 
     const res: Array<ID> = await getIDs(conn, embedQuery, "chat");
+
     let array: Array<any> = [];
 
     for (let i = 0; i < res.length; i++) {
-      await fetchAndAddToNodeList(array, conn, res[i]);
+      await fetchAndAddToNodeList(array, conn, res[i], "chat");
     }
 
     // Sort node_list
@@ -591,40 +593,6 @@ export async function findRelevantDocs({
         node_b.score - node_a.score
     );
 
-    const filtered_node_ids: string[] = [];
-    const filtered_nodes: NodeContentPair[] = [];
-
-    // Grab unique nodes and highest ranking text content for preview
-    for (const node of array) {
-      if (
-        !filtered_node_ids.includes(node.node_id) &&
-        node.content_type == "text"
-      ) {
-        filtered_nodes.push(node);
-        filtered_node_ids.push(node.node_id);
-      } else if (
-        filtered_node_ids.includes(node.node_id) &&
-        node.content_type == "text"
-      ) {
-        const existingNode = filtered_nodes.find(
-          (n) => n.node_id === node.node_id
-        );
-        if (existingNode) {
-          existingNode.content += node.content;
-        }
-      }
-    }
-
-    // Generate content previews
-    for (const node of filtered_nodes) {
-      node.content_preview = await getPreview("", node);
-    }
-
-    console.log(filtered_nodes);
-
-    return filtered_nodes;
-
-    // console.log(array);
     return array;
   } catch (error) {
     console.log(error);
@@ -636,6 +604,7 @@ export async function findRelevantDocs({
     }
   }
 }
+
 //search the database
 export async function searchDatabase({
   conn,
@@ -657,11 +626,18 @@ export async function searchDatabase({
       parsedInput = JSON.parse(JSON.stringify(response.data, undefined, 3)); // turn it into a JSON object
       embedding = await geckoEmbedding(parsedInput.result[0].description);
     }
+
     // if it didn't go through embed the entire text
     else {
       embedding = await geckoEmbedding(input);
     }
 
+    console.log("CHECKING TYPECHAT");
+    console.log(JSON.stringify(parsedInput, undefined, 3)); // turn it into a JSON object
+
+    if (!parsedInput) {
+      return [];
+    }
     const embedQuery =
       "SELECT content_id, DOT_PRODUCT_F64(JSON_ARRAY_PACK_F64('[" +
       embedding +
@@ -671,26 +647,27 @@ export async function searchDatabase({
     let node_list: any = [];
 
     for (let i = 0; i < res.length; i++) {
-      console.log("\nResult:");
-      console.log(res[i].score);
-      console.log(res[i].content_id);
+      // console.log("\nResult:");
+      // console.log(res[i].score);
+      // console.log(res[i].content_id);
 
-      console.log("Res: " + res[i].content_id);
-      console.log("Node list: " + JSON.stringify(node_list));
+      // console.log("Res: " + res[i].content_id);
+      // console.log("Node list: " + JSON.stringify(node_list));
 
-      if (res[i].score! > 0.65) {
-        if (parsedInput.result[0].filter)
-          await fetchAndAddToNodeList(
-            node_list,
-            conn,
-            res[i],
-            input!,
-            parsedInput.result[0].filter.type
-          );
-        else {
-          await fetchAndAddToNodeList(node_list, conn, res[i], input!);
-        }
+      if (parsedInput.result[0].filter)
+        await fetchAndAddToNodeList(
+          node_list,
+          conn,
+          res[i],
+          "search",
+          parsedInput.result[0].filter.type
+        );
+      else {
+        await fetchAndAddToNodeList(node_list, conn, res[i], "search");
       }
+
+      // console.log("PRINT NODE LIST");
+      // console.log(JSON.stringify(node_list));
     }
 
     // Sort node_list
@@ -702,33 +679,48 @@ export async function searchDatabase({
     const filtered_node_ids: string[] = [];
     const filtered_nodes: NodeContentPair[] = [];
 
-    // Grab unique nodes and highest ranking text content for preview
+    // lopp through each node in the node list
     for (const node of node_list) {
-      if (
-        !filtered_node_ids.includes(node.node_id) &&
-        node.content_type == "text"
-      ) {
+      // if node is not already in the list, add it
+      if (!filtered_node_ids.includes(node.node_id)) {
         filtered_nodes.push(node);
         filtered_node_ids.push(node.node_id);
-      } else if (
+      }
+
+      // if the node is in the list and is of content_type text, search for an existing node
+      else if (
         filtered_node_ids.includes(node.node_id) &&
         node.content_type == "text"
       ) {
+        // !!IMPORTANT!!  look for existing node based on node_id and content_type
         const existingNode = filtered_nodes.find(
-          (n) => n.node_id === node.node_id
+          (n) => n.node_id === node.node_id && n.content_type == "text"
         );
+
+        // if existing node is found, add more text to it
         if (existingNode) {
           existingNode.content += node.content;
+        }
+
+        // if existing node is not found that means it is an image or code with the same node ID and it should be its own separate node.
+        else {
+          filtered_nodes.push(node);
         }
       }
     }
 
     // Generate content previews
     for (const node of filtered_nodes) {
-      node.content_preview = await getPreview(input!, node);
-    }
+      // generate a preview for text only
+      if (node.content_type == "text") {
+        node.content_preview = await getPreview(input!, node);
+      }
 
-    console.log(filtered_nodes);
+      // if content is not of text type, remove content_preview field.
+      else {
+        delete node.content_preview;
+      }
+    }
 
     return filtered_nodes;
   } catch (error) {
@@ -742,10 +734,7 @@ export async function searchDatabase({
 }
 
 export async function getPreview(query: string, result: any) {
-  console.log(query);
-  console.log(result.content);
-  if (result.content_type === "text") {
-    const prompt: string = `Given the following prompt: "${query}", and the following block of content:
+  const prompt: string = `Given the following prompt: "${query}", and the following block of content:
     "${result.content}", please summarize the relevant content block and relate it to the prompt. 
 
       You will adhere to all of the following rules when generating your response:
@@ -759,40 +748,38 @@ export async function getPreview(query: string, result: any) {
       
       `;
 
-    const systemMessage: ChatCompletionMessage = {
-      role: "assistant",
-      content: prompt,
-    };
+  const systemMessage: ChatCompletionMessage = {
+    role: "assistant",
+    content: prompt,
+  };
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      stream: false,
-      messages: [systemMessage],
-    });
+  const response = await openai.chat.completions.create({
+    model: "gpt-3.5-turbo",
+    stream: false,
+    messages: [systemMessage],
+    top_p: 0.2,
+    temperature: 0.3,
+  });
 
-    if (response.choices[0].message.content != null) {
-      return response.choices[0].message.content;
-    } else {
-      return "No Preview";
-    }
+  if (response.choices[0].message.content != null) {
+    return response.choices[0].message.content;
   } else {
-    return "";
+    return "No Preview";
   }
 }
 
-// to group jira issues by project
+//get nodes from database and add them to a list
 async function fetchAndAddToNodeList(
   node_list: any,
   conn: mysql.Connection,
   result: any,
-  query?: string,
+  type: string,
   filter?: string
 ) {
-  console.log("NODE ID : " + result.node_id);
   const pair = await getNodeContentPair(
     conn,
     result,
-    "search",
+    type,
     result.score,
     filter
   );
@@ -801,26 +788,48 @@ async function fetchAndAddToNodeList(
     return;
   }
 
-  const root: NodeContentPair = {
-    score: result.score,
-    node_id: pair.node_id,
-    node_title: pair.node_title,
-    parent_id: pair.node_id,
-    parent_node_title:
-      pair.parent_node_title == "null" ? null : pair.parent_node_title,
-    parent_node_url:
-      pair.parent_node_url == "null" ? null : pair.parent_node_url,
-    node_type: pair.node_type,
-    url: pair.url,
-    content: pair.content,
-    content_preview: "placeholder",
-    last_updated: pair.last_updated,
-    content_type: pair.content_type,
-    node_source: pair.data_source,
-    children_ids: pair.children_ids,
-    children: [],
-  };
-  node_list.push(root);
+  if (type == "search") {
+    const root: NodeContentPair = {
+      score: result.score,
+      node_id: pair.node_id,
+      node_title: pair.node_title,
+      parent_id: pair.node_id,
+      parent_node_title:
+        pair.parent_node_title == "null" ? null : pair.parent_node_title,
+      parent_node_url:
+        pair.parent_node_url == "null" ? null : pair.parent_node_url,
+      node_type: pair.node_type,
+      url: pair.url,
+      content: pair.content,
+      content_preview: "placeholder",
+      last_updated: pair.last_updated,
+      content_type: pair.content_type,
+      node_source: pair.data_source,
+      children_ids: pair.children_ids,
+      children: [],
+    };
+    node_list.push(root);
+  } else {
+    const root: NodeContentPair = {
+      score: result.score,
+      node_id: pair.node_id,
+      node_title: pair.node_title,
+      parent_id: pair.node_id,
+      parent_node_title:
+        pair.parent_node_title == "null" ? null : pair.parent_node_title,
+      parent_node_url:
+        pair.parent_node_url == "null" ? null : pair.parent_node_url,
+      node_type: pair.node_type,
+      url: pair.url,
+      content: pair.content,
+      last_updated: pair.last_updated,
+      content_type: pair.content_type,
+      node_source: pair.data_source,
+      children_ids: pair.children_ids,
+      children: [],
+    };
+    node_list.push(root);
+  }
 }
 
 //get and format doc into json
@@ -843,11 +852,17 @@ async function getNodeContentPair(
     query = `
     SELECT content, content_type FROM contents WHERE content_id = '${content_id}'`;
   }
-
   let content: any = await getContent(conn, query);
+
+  if (content == null) {
+    return;
+  }
+
   let node_id: any = await getNodeId(conn, content_id);
+
+  // console.log(`NODE_ID: ${node_id}`)
   let node: any = await getNode(conn, node_id);
-  // let parent:any = await getNode(conn, node.parent_id);
+
   let parent: any =
     node && node.parent_id !== "null"
       ? await getNode(conn, node.parent_id)
@@ -858,20 +873,28 @@ async function getNodeContentPair(
     return;
   }
 
-  if (content == null) {
-    return;
-  }
-
   // console.log(
   //   `\nNODE TITLE: ${node.node_title}\nDATA SOURCE: ${node.data_source}\nPARENT_ID: ${node.parent_id}\nNODE_ID:${node.node_id} `
   // );
 
   let parent_node_title = null;
   let parent_node_url = null;
+  let node_url = null;
 
   if (parent) {
     parent_node_title = parent.node_title;
-    parent_node_url = parent.url;
+
+    if (parent.node_type == "page") {
+      parent_node_url = modifyUrl(parent.url);
+    } else {
+      parent_node_url = parent.url;
+    }
+  }
+
+  if (node.node_type == "page") {
+    node_url = modifyUrl(node.url);
+  } else {
+    node_url = node.url;
   }
 
   if (type == "search") {
@@ -882,7 +905,7 @@ async function getNodeContentPair(
       node_type: node.node_type,
       content: content.content,
       content_type: content.content_type,
-      url: node.url,
+      url: node_url,
       data_source: node.data_source,
       last_updated: node.last_updated,
       parent_id: node.parent_id == "null" ? null : node.parent_id,
@@ -898,7 +921,7 @@ async function getNodeContentPair(
     node_type: node.node_type,
     content: content.content,
     content_type: content.content_type,
-    url: node.url,
+    url: node_url,
     data_source: node.data_source,
     last_updated: node.last_updated,
     parent_id: parent ? null : node.parent_id,
@@ -925,7 +948,6 @@ async function getNodeId(conn: mysql.Connection, content_id: string) {
   SELECT distinct node_id FROM contents WHERE content_id = '${content_id}'
   `;
   const result: any = await conn.query(query);
-  console.log(JSON.stringify(result));
   return result[0][0].node_id;
 }
 
@@ -933,10 +955,10 @@ async function getNodeId(conn: mysql.Connection, content_id: string) {
 async function getIDs(conn: mysql.Connection, query: string, type: string) {
   const res: any = await conn.query(query);
   const search_result = res[0];
+
   let content_id = "";
   let node_id = "";
 
-  // return is different based on whether this is for a search or  chat function
   let result: Array<ID> = [];
 
   // get the node id by splitting by the dash, return the sim. score
@@ -946,25 +968,20 @@ async function getIDs(conn: mysql.Connection, query: string, type: string) {
     content_id: "",
   };
   for (let i = 0; i < search_result.length; i++) {
-    // get content id
-    content_id = search_result[i].content_id;
-    //extract node id from content_id
-    node_id = search_result[i].content_id.split("-")[0];
+    if (search_result[i].score > 0.65) {
+      // get content id
+      content_id = search_result[i].content_id;
+      //extract node id from content_id
+      node_id = search_result[i].content_id.split("-")[0];
 
-    if (type == "search") {
       node_info = {
         node_id: node_id,
         content_id: content_id,
         score: search_result[i].score,
       };
-    } else {
-      node_info = {
-        node_id: node_id,
-        content_id: content_id,
-      };
-    }
 
-    result.push(node_info);
+      result.push(node_info);
+    }
   }
 
   return result;
@@ -1056,12 +1073,6 @@ async function addChild(parentIndex: number, pair: any, node_list: any) {
       child.items.push(item);
       node_list[parentIndex].children.push(child);
     }
-
-    // console.log("CHILD NOT FOUND");
-    // console.log(`PARENT LOCATED AT ${parentIndex}`);
-    // console.log(
-    //   `ADDING ${item.id} TO ${child.child_id} IN ${node_list[parentIndex].parent_id}`
-    // );
   }
 }
 // find parent node
@@ -1101,12 +1112,6 @@ function findChildIndex(child_id: string, parentIndex: number, node_list: any) {
   return node_list[parentIndex].children.indexOf(target);
 }
 
-// find grandparent node
-// function removeEmptynode_list(node_list: any) {
-//   // console.log("REMOVING EMPTY node_list");
-//   return node_list.filter((pair: Node) => pair.children.length > 0);
-// }
-
 function removeMember(target_id: string, members: Array<string>) {
   return members.filter((id: string) => id != target_id);
 }
@@ -1115,4 +1120,15 @@ function formatDateString(formatee: string) {
   const originalDate = parseISO(formatee);
 
   return format(originalDate, "yyyy-MM-dd HH:mm:ss");
+}
+
+function modifyUrl(url: string) {
+  // Splitting the URL by '/'
+  var urlParts = url.split("/");
+
+  // Modifying the URL
+  var modifiedUrl =
+    urlParts.slice(0, 3).join("/") + "/wiki/" + urlParts.slice(3).join("/");
+
+  return modifiedUrl;
 }

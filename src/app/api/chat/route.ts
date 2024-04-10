@@ -4,18 +4,6 @@ import { findRelevantDocs } from "@/app/api/database/singlestore";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import { geckoEmbedding } from "@/app/lib/models/vertexai";
 
-function removeIDs(doc: any) {
-  for (let i = 0; i < doc.length; i++) {
-    delete doc[i].parent_id;
-    delete doc[i].children_ids;
-
-    for (let j = 0; j < doc[i].children.length; j++) {
-      delete doc[i].children[j].child_id;
-    }
-  }
-
-  return doc;
-}
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -31,11 +19,12 @@ export async function POST(req: Request) {
 
     // NEED TO GET USER'S ID FOR SPECIFIC CONVO HISTORY
 
+
     let relevantDocs: any = await findRelevantDocs({ embedding });
+
     let systemMessage: ChatCompletionMessage;
 
     if (relevantDocs) {
-      relevantDocs = removeIDs(relevantDocs);
       let parsed_docs = JSON.stringify(relevantDocs, null, 3).replace(
         /[\[\]{}]/g,
         ""
@@ -48,6 +37,7 @@ export async function POST(req: Request) {
         
         ${parsed_docs}
       
+        Score indicates how relevant a document is to the user's query. The closer the score is to 1, the more relevant it is.
         The time in the last updated field is in 24 hour time. Convert it to the AM/PM format. Do not include the seconds.
         Do not display links in the [linkTitle](linkUrl) format. Display the url in plaintext.
 
@@ -70,11 +60,13 @@ export async function POST(req: Request) {
       };
     }
 
-    console.log(systemMessage);
+    // console.log(systemMessage);
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       stream: true,
       messages: [systemMessage, ...messagesTruncated],
+      top_p: 0.2,
+      temperature: 0.3
     });
 
     const stream = OpenAIStream(response);
