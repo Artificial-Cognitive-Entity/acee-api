@@ -51,7 +51,6 @@ const DashArea = (user: User) => {
 
           <div className="flex flex-col justify-center items-center h-full gap-5 ml-3 mr-3 mb-12 rounded-md overflow-y-auto">
             <div className="bg-purple-900 w-2/12 h-2/12 text-center rounded-md text-lg m-3 p-3 font-bold text-white">
-              {" "}
               Manage your group below
             </div>
 
@@ -78,3 +77,5 @@ const DashArea = (user: User) => {
 };
 
 export default DashArea;
+
+// 
