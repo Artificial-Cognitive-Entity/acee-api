@@ -5,10 +5,16 @@ export interface Question {
 
 //use this type for user queries
 export interface Query {
-  //anything the user enters should go here,
+  //general search queries that are readable and coherent should go here
   description: string;
   // if the user specifies a filter it should go here
   filter?: ContentType;
+}
+
+// Use this type for text that makes no sense and is not coherent
+export interface UnknownText {
+  type: "unknown",
+  text: string; // The text that wasn't understood
 }
 
 export type ContentType =
