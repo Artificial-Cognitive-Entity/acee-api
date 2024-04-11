@@ -116,7 +116,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
   return (
     <>
       {originalData && (
-        <div className="bg-black rounded-lg shadow-lg shrink-0 grow-0 basis-0 z-10">
+        <div className="bg-black rounded-lg shadow-lg shrink-0 grow-0 basis-0 w-full">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-700">
             <div className="flex justify-center items-center">
               <Button
@@ -129,7 +129,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
               </Button>
             </div>
           </div>
-          <div className="overflow-x-auto overflow-y-hidden">
+          <div className="overflow-x-auto overflow-y-hidden w-full">
             <table className="min-w-full divide-y divide-gray-700 text-center w-full">
               <thead className="bg-gray-800">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -157,7 +157,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
                       {row.getVisibleCells().map((cell) => (
                         <td
                           key={cell.id}
-                          className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white relative"
+                          className="px-6 py-4 whitespace-nowrap text-xl text-white relative"
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
