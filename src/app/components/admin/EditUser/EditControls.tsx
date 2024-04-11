@@ -57,7 +57,7 @@ const EditControls = ({ row, table }: CellProps) => {
         </Button>
     
         <Button
-        className=" base-content"
+        className="base-content"
         name="edit"
         onClick={setEditedRows}
       >

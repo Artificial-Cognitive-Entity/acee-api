@@ -66,7 +66,6 @@ export const options = {
     },
   },
 
-  //TODO: ADD ERROR PAGE
   pages: {
     signIn: "/login", // Optional: specify a custom sign-in page
     redirect: "/dashboard", // Redirect to /dashboard after successful sign-in
