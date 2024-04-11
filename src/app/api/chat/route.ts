@@ -48,6 +48,7 @@ export async function POST(req: Request) {
 
         Desired Output:
         - Try not to refer to the data structure you are recieving, speak in a conversational, natural language tone
+        - If there is a link provided, give the link to the user
         `,
       };
     } else {
@@ -64,9 +65,7 @@ export async function POST(req: Request) {
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       stream: true,
-      messages: [systemMessage, ...messagesTruncated],
-      top_p: 0.2,
-      temperature: 0.3
+      messages: [systemMessage, ...messagesTruncated]
     });
 
     const stream = OpenAIStream(response);
