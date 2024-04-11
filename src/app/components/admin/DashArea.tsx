@@ -53,7 +53,7 @@ const DashArea = (user: User) => {
             </div>
 
             <div className="overflow-y-auto rounded-md w-11/12">
-              <div className="w-full">
+              <div>
                 <div
                   className={
                     loading
