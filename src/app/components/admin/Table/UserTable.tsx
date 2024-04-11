@@ -156,7 +156,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
                       {row.getVisibleCells().map((cell) => (
                         <td
                           key={cell.id}
-                          className="px-6 py-4 whitespace-nowrap text-xl text-white relative"
+                          className="px-6 py-4 relative whitespace-nowrap text-xl text-white"
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
