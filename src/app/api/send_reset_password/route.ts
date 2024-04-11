@@ -23,7 +23,7 @@ export async function POST(req: Request) {
         host: 'smtp.mail.yahoo.com',
         port: 465,
         service:'yahoo',
-        secure: false,
+        secure: true,
         auth: {
            user: process.env.EMAIL_USERNAME,
            pass: process.env.EMAIL_PASSWORD,
