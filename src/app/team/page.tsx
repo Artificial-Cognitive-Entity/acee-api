@@ -5,7 +5,7 @@ import joshImage from "@/app/images/josh-image.png";
 import mihirImage from "@/app/images/mihir-image.jpg";
 import kaylaImage from"@/app/images/kayla-image.png";
 import celinaImage from "@/app/images/celina-image.png";
-import nickImage from "@/app/images/nick-image.jpg";
+import nickImage from "@/app/images/nick_image.jpg";
 const TeamPage = () => {
   const teamMembers = [
     {
