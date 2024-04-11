@@ -12,6 +12,8 @@ export async function POST(req: Request) {
 
   const url = new URL(body.url);
   const token = url.searchParams.get("token");
+  console.log(url);
+  console.log(token);
 
   if (!body.password || !token) {
     //res.status(400).json({ error: 'Email is required' });
