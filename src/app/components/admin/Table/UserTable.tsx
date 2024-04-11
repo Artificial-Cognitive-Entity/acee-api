@@ -52,20 +52,20 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     meta: {
+      editedRows,
+      setEditedRows,
       updateData: (rowIndex: number, columnID: string, value: string) =>
         setInfo((prev: any[]) =>
           prev.map((row: any, index: number) =>
             index === rowIndex ? { ...prev[rowIndex], [columnID]: value } : row
           )
         ),
-      revertData: (rowIndex: number, revert: boolean) => {
-        if (revert) {
-          setInfo((old: any[]) =>
-            old.map((row: any, index: number) =>
-              index === rowIndex ? originalData[rowIndex] : row
-            )
-          );
-        }
+      revertData: (rowIndex: number) => {
+        setInfo((old: any[]) =>
+          old.map((row: any, index: number) =>
+            index === rowIndex ? originalData[rowIndex] : row
+          )
+        );
       },
       updateRow: async (rowIndex: number) => {
         const response = await fetch("/api/update_user", {
@@ -77,8 +77,7 @@ const UserTable = ({ toggleModal, loadingState }: TableProps) => {
         });
         return response.json();
       },
-      editedRows,
-      setEditedRows,
+
       deleteRow: (rowIndex: number) => {
         setInfo((old: any[]) =>
           old.filter((row: any, index: number) => index !== rowIndex)
